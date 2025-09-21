@@ -210,7 +210,7 @@
     ctx.clearRect(0,0,c.width,c.height);
 
     // INCREASED DENSITY: divide by smaller number => more stars
-    const density = Math.max(120, Math.floor((c.width*c.height)/10000)); // more dots
+    const density = Math.max(120, Math.floor((c.width*c.height)/50000)); // more dots
 
     const stars = [];
     if(cfg.flicker && Array.isArray(cfg.dotNeg)){
@@ -349,4 +349,5 @@
 </script>
 </body>
 </html>
+
 
