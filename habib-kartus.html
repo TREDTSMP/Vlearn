@@ -3,186 +3,174 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>VLearn — वज़ीर अली (Q&A)</title>
+<title>VLearn — हबीब तनवीर — कारतूस (एकांकी)</title>
 <link rel="icon" type="image/png" href="Logo.png">
 <style>
   :root{
-    --bg:#ffffff; --fg:#001d3d; --card-bg: rgba(255,255,255,0.96);
-    --nav-bg: rgba(255,255,255,0.95); --nav-fg:#001d3d;
+    --bg:#ffffff; --fg:#001d3d; --nav-bg:rgba(255,255,255,0.95); --nav-fg:#001d3d;
+    --card-bg: rgba(255,255,255,0.96);
   }
-  html,body{ height:100%; margin:0; padding:0; font-family:"Noto Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; -webkit-font-smoothing:antialiased; }
-  body{ background:var(--bg); color:var(--fg); }
-
-  /* star background canvas */
-  #bgCanvas { position:fixed; inset:0; z-index:0; width:100%; height:100%; display:block; }
-
-  /* wrapper for visible content */
-  .site-wrap{ position:relative; z-index:10; padding:16px; }
-
-  /* top nav */
-  .navbar{ width:92%; max-width:1200px; margin:18px auto; background:var(--nav-bg); border-radius:20px; box-shadow:0 8px 24px rgba(0,0,0,0.06); display:flex; align-items:center; gap:12px; padding:6px 12px; }
-  .navbar a{ color:var(--nav-fg); text-decoration:none; font-weight:700; padding:10px 14px; border-radius:8px; }
-  .navbar a:hover{ background:rgba(0,0,0,0.04); }
-
-  /* main card */
-  .card{ width:92%; max-width:1200px; margin:18px auto; background:var(--card-bg); border-radius:16px; padding:22px; box-shadow:0 10px 30px rgba(0,0,0,0.06); }
-  .card h1{ font-family:"Merriweather", serif; font-size:32px; margin-bottom:6px; text-align:center; }
-  .card h2{ font-size:22px; margin:18px 0 8px; }
-  .card p { line-height:1.8; margin:8px 0; }
-  .qa-block{ margin:12px 0 18px; padding:12px; border-radius:10px; background:rgba(255,255,255,0.02); }
-
-  .section-title{ font-size:18px; font-weight:800; margin-top:10px; }
-
-  /* small table of contents */
-  .toc{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
-  .toc a{ padding:8px 12px; background:rgba(0,0,0,0.03); border-radius:8px; text-decoration:none; color:var(--nav-fg); font-weight:700; }
-
-  /* responsive */
-  @media (max-width:800px){
-    .card h1{ font-size:26px; }
-    .card h2{ font-size:18px; }
+  html,body{ height:100%; margin:0; padding:0; }
+  body{ font-family: "Noto Sans", "Merriweather", system-ui, sans-serif; background:var(--bg); color:var(--fg); -webkit-font-smoothing:antialiased; }
+  /* star bg */
+  #spaceCanvas{ position:fixed; inset:0; z-index:0; width:100%; height:100%; display:block; }
+  /* page shell */
+  .wrap{ position:relative; z-index:10; padding:20px; }
+  /* navbar */
+  .navbar{ display:flex; align-items:center; justify-content:flex-start; background:var(--nav-bg); color:var(--nav-fg); border-radius:28px; width:92%; max-width:1200px; margin:18px auto; padding:6px 12px; z-index:20; box-shadow:0 8px 24px rgba(0,0,0,0.08); }
+  .navbar a{ padding:10px 14px; font-weight:700; color:var(--nav-fg); text-decoration:none; }
+  .navbar a:hover{ background:rgba(0,0,0,0.04); border-radius:8px; }
+  /* card */
+  .card{ width:92%; max-width:1200px; margin:18px auto; background:var(--card-bg); border-radius:14px; padding:22px; box-shadow:0 10px 36px rgba(0,0,0,0.06); }
+  .title{ font-family:"Merriweather", serif; font-size:32px; text-align:center; margin-bottom:6px; }
+  .subtitle{ text-align:center; color:rgba(0,0,0,0.6); margin-bottom:18px; font-weight:700; }
+  .meta{ font-size:14px; color:rgba(0,0,0,0.55); text-align:center; margin-bottom:18px; }
+  .columns{ display:flex; gap:20px; }
+  .col{ flex:1; padding:10px; font-size:16px; line-height:1.8; color:var(--nav-fg); }
+  .col h3{ font-size:18px; margin-bottom:8px; text-align:left; }
+  ul{ margin:8px 0 0 18px; padding:0; }
+  a.chapter-link{ color:var(--nav-fg); font-weight:800; text-decoration:none; }
+  a.chapter-link:hover{ text-decoration:underline; }
+  .qa{ margin:10px 0; padding:12px; border-radius:10px; background:rgba(0,0,0,0.02); }
+  .qa strong{ display:block; margin-bottom:6px; }
+  .important{ background:linear-gradient(90deg, rgba(255,235,205,0.9), rgba(255,249,230,0.9)); padding:12px; border-radius:10px; margin-top:12px; }
+  .back{ display:inline-block; margin-top:12px; text-decoration:none; color:var(--nav-fg); font-weight:800; padding:8px 12px; border-radius:8px; background:rgba(0,0,0,0.03); }
+  @media (max-width:920px){ .columns{ flex-direction:column; } .title{ font-size:26px; } }
+  /* print-friendly tweaks */
+  @media print{
+    body{ background:#fff; color:#000; }
+    #spaceCanvas, .navbar, .back, .theme-btn { display:none !important; }
+    .card{ box-shadow:none; border-radius:0; }
   }
 </style>
 </head>
 <body>
-<canvas id="bgCanvas" aria-hidden="true"></canvas>
+<canvas id="spaceCanvas" aria-hidden="true"></canvas>
 
-<div class="site-wrap">
-  <nav class="navbar" role="navigation" aria-label="Main">
+<div class="wrap" role="main">
+  <nav class="navbar" aria-label="Main navigation">
     <a href="index.html">HOME</a>
-    <a href="hindi.html">हिंदी साहित्य - ब</a>
-    <a href="wazir-ali-qa.html" aria-current="page">Q&amp;A</a>
+    <a href="hindi.html" style="margin-left:10px;">हिंदी साहित्य - ब</a>
     <div style="flex:1"></div>
-    <a href="habib-kartus.html">हबीब तनवीर</a>
+    <a href="index.html" title="VLearn">VLEARN</a>
   </nav>
 
-  <main class="card" role="main" aria-labelledby="pageTitle">
-    <h1 id="pageTitle">वज़ीर अली — प्रश्नोत्तर (Q&amp;A)</h1>
-    <p style="text-align:center;color:rgba(0,0,0,0.55);margin-bottom:18px;">(नोट: यह पृष्ठ 'हिंदी साहित्य - ब' के संदर्भ के अनुसार उत्तर-संग्रह है)</p>
+  <article class="card" aria-labelledby="pageTitle">
+    <h1 id="pageTitle" class="title">हबीब तनवीर — <span style="font-weight:900">कारतूस</span> (एकांकी)</h1>
+    <div class="subtitle">छात्रों के लिए संक्षिप्त सारांश, प्रश्नोत्तरी और विश्लेषण</div>
+    <div class="meta">CBSE Class X — VLearn Directory</div>
 
-    <div class="toc" aria-hidden="false">
-      <a href="#maukik">मौखिक</a>
-      <a href="#likhit">लिखित — (क)</a>
-      <a href="#likhit-b">लिखित — (ख)</a>
-      <a href="#likhit-c">लिखित — (ग)</a>
-      <a href="#ashaya">आशय स्पष्ट</a>
+    <!-- summary -->
+    <section aria-labelledby="summaryTitle" style="margin-bottom:14px;">
+      <h2 id="summaryTitle" style="font-size:18px;margin-bottom:8px;">सारांश (संक्षेप में)</h2>
+      <p>हबीब तनवीर का एकांकी "कारतूस" एक प्रभावशाली नाटक है जो समाज, मानवता और संघर्ष के प्रति मानवीय संवेदनाओं को दर्शाता है। यह नाट्य लेखन अपनी प्रतीकात्मकता, भाषाई सरलता और पात्रों के मनोवैज्ञानिक पहलुओं के लिए जाना जाता है। (यहां आप अपने नोट्स या NCERT के अंश जोड़ सकते हैं।)</p>
+    </section>
+
+    <!-- two-column: Q&A + points -->
+    <div class="columns">
+      <div class="col" aria-labelledby="qaTitle">
+        <h3 id="qaTitle">प्रश्नोत्तर (संक्षेप) — मौखिक / लिखित तैयारी</h3>
+
+        <div class="qa">
+          <strong>प्रश्न 1:</strong> "कारतूस" का मुख्य विषय क्या है?
+          <div><em>उत्तर:</em> मुख्य विषय इंसान की असुरक्षा, शक्ति- संघर्ष और मानवीय मूल्यों का संकट है — पात्रों के व्यवहार और परिस्थितियों के माध्यम से ये विचार उभरते हैं।</div>
+        </div>
+
+        <div class="qa">
+          <strong>प्रश्न 2:</strong> हबीब तनवीर ने संवाद और मंच प्रस्तुति में क्या खासियत दी है?
+          <div><em>उत्तर:</em> सरल, सजीव संवाद; प्रतीकात्मकता और दृश्य रूपांकन; पात्रों के माध्यम से संदेश को प्रत्यक्ष तथा संकेतात्मक दोनों तरह से प्रस्तुत किया जाता है।</div>
+        </div>
+
+        <div class="qa">
+          <strong>प्रश्न 3:</strong> इस एकांकी के कौन-से दृश्य/पात्र महत्वपूर्ण हैं — क्यों?
+          <div><em>उत्तर:</em> (उदाहरण) नायक-प्रतिनिधि पात्र जो आंतरिक संघर्ष दिखाते हैं, तथा संकेत-प्रतीकों (जैसे कारतूस) का प्रयोजन — ये पाठ का केंद्र बनकर पाठक/दर्शक को सोचने पर मजबूर करते हैं।</div>
+        </div>
+
+        <div class="qa">
+          <strong>लिखित प्रश्न हेतु सुझाव:</strong>
+          <div>उत्तर 40-60 शब्दों में लिखते समय विषय, पात्र और नाटकीय तकनीक का उल्लेख करें। उद्धरण देने हों तो छोटा-सा उद्धरण जोड़ें और उसके तात्पर्य को स्पष्ट करें।</div>
+        </div>
+
+      </div>
+
+      <div class="col" aria-labelledby="pointsTitle">
+        <h3 id="pointsTitle">महत्वपूर्ण बिंदु / विश्लेषण</h3>
+
+        <ul>
+          <li><strong>प्रतीक:</strong> “कारतूस” जैसी चीजें अक्सर हिंसा, शक्ति या परिवर्तन की क्षमता का प्रतीक बनती हैं — इनके अर्थ पर ध्यान दें।</li>
+          <li><strong>भाषा व शैली:</strong> तनवीर की भाषा सहज पर प्रभावशाली होती है — संवाद छोटे, अर्थपूर्ण और भावनात्मक होते हैं।</li>
+          <li><strong>मंचीयता:</strong> मंच निर्देशन और अभिनय का महत्व — मंच पर वस्तुओं/प्रतीकों का प्रयोग अर्थ गहरा कर देता है।</li>
+          <li><strong>समाज-संदर्भ:</strong> नाटक का समाजिक संदर्भ समझकर उत्तर लिखें (युग, संघर्ष का कारण आदि)।</li>
+          <li><strong>सैद्धांतिक सवाल:</strong> पात्रों के कृत्यों का नैतिक मूल्यांकन — क्यों और किस हेतु किया गया, विश्लेषण करें।</li>
+        </ul>
+
+        <div class="important" aria-hidden="false">
+          <strong>Exam Tip:</strong>
+          <div>प्रत्येक उत्तर की शुरुआत में सीधे प्रश्न का जवाब दें, फिर उदाहरण/प्रमाण जोड़ें, और अंत में एक छोटा-सा निष्कर्ष दें।</div>
+        </div>
+      </div>
     </div>
 
-    <!-- MAUKIK -->
-    <section id="maukik" class="qa-block" aria-labelledby="maukikTitle">
-      <h2 id="maukikTitle">मौखिक — एक-दो पंक्तियों के उत्तर</h2>
+    <!-- longer practice questions -->
+    <section style="margin-top:18px;">
+      <h2 style="font-size:18px;margin-bottom:10px;">प्रश्न अभ्यास — विस्तारित उत्तर</h2>
 
-      <p><strong>प्रश्न 1.</strong> कर्नल कालिंज का खेमा जंगल में क्यों लगा हुआ था?</p>
-      <p><em>उत्तर —</em> कर्नल कालिंज का खेमा जंगल में वज़ीर अली की गिरफ़्तारी के लिए लगा हुआ था। कर्नल को लग रहा था कि वज़ीर अली कहीं जंगल में छिपा होगा क्योंकि वह वर्षों से उनकी नजरों से बच रहा था।</p>
+      <div class="qa">
+        <strong>प्रश्न A:</strong> नाटक में 'कारतूस' का प्रतीकात्मक महत्व समझाइए।
+        <div><em>उत्तर (नमूना):</em> 'कारतूस' शक्ति और परिवर्तन की क्षमता का प्रतीक है; पात्रों के बीच वैचारिक संघर्ष और हिंसा के विकल्पों को यह वस्तु चित्रित करती है। लेखक का उद्देश्य यह बताना है कि हथियार/शक्ति किसी समस्या का स्थायी समाधान नहीं दे सकते — मनुष्यिक निर्णय महत्वपूर्ण हैं।</div>
+      </div>
 
-      <p><strong>प्रश्न 2.</strong> वज़ीर अली से सिपाही क्यों तंग आ चुके थे?</p>
-      <p><em>उत्तर —</em> सिपाही इसलिए तंग आ चुके थे क्योंकि कई दिनों से वज़ीर अली पकड़ा नहीं जा रहा था और डेरा डालकर भी उसे ढूँढ़ने के बाद वे थक चुके थे।</p>
-
-      <p><strong>प्रश्न 3.</strong> कर्नल ने सवार पर नज़र रखने के लिए क्यों कहा?</p>
-      <p><em>उत्तर —</em> ताकि यह देखा जा सके कि सवार किस दिशा में जा रहा है और उसकी गतिविधियों की जाँच की जा सके।</p>
-
-      <p><strong>प्रश्न 4.</strong> सवार ने क्यों कहा कि वज़ीर अली की गिरफ़्तारी बहुत मुश्किल है?</p>
-      <p><em>उत्तर —</em> क्योंकि सवार स्वयं वज़ीर अली था — उसने ऐसा वेश बदला था कि किसी को पहचान न आया, इसलिए उसने कहा कि गिरफ़्तारी कठिन है।</p>
+      <div class="qa">
+        <strong>प्रश्न B:</strong> नाटक में किसी एक पात्र का मनोवैज्ञानिक विश्लेषण करिए।
+        <div><em>उत्तर (रुचि अनुसार):</em> (यहां चुनें — नायक/प्रतिशोधी/समर्थक) पात्र के कार्यों, शब्दों और प्रतीकात्मक क्रियाओं को जोड़कर 60-80 शब्दों में उसका व्याख्यान दें।</div>
+      </div>
     </section>
 
-    <!-- LIKHIT (k) -->
-    <section id="likhit" class="qa-block" aria-labelledby="likhitTitle">
-      <h2 id="likhitTitle">लिखित — (क) — 25-30 शब्दों के उत्तर</h2>
-
-      <p><strong>प्रश्न 1.</strong> वज़ीर अली के अफ़साने सुनकर कर्नल को रॉबिनहुड की याद क्यों आ जाती थी?</p>
-      <p><em>उत्तर —</em> क्योंकि वज़ीर अली जंगल में भटकता पर किसी के हाथ नहीं आता था, ठीक वैसे ही जैसे रॉबिनहुड भी जंगल में घूमता था पर पकड़ में नहीं आता था।</p>
-
-      <p><strong>प्रश्न 2.</strong> सआदत अली कौन था? उसने वज़ीर अली की पैदाइश को अपनी मौत क्यों समझा?</p>
-      <p><em>उत्तर —</em> सआदत अली अवध के नवाब आसिफउद्दौला का भाई और वज़ीर अली का चाचा था। वज़ीर अली के जन्म के बाद सआदत अली की नवाबी की संभावना समाप्त हो गई — इसलिए उसने वज़ीर अली की पैदाइश को अपनी 'मौत' समझा।</p>
-
-      <p><strong>प्रश्न 3.</strong> सआदत अली को अवध के तख्त पर बिठाने के पीछे कर्नल का क्या मकसद था?</p>
-      <p><em>उत्तर —</em> कर्नल का मकसद था कि सआदत अली पर भरोसा करके वह स्वयं ऐश-ओ-आराम की जिंदगी बिताएगा और कर्नल को दौलत व लाभ देकर फायदा पहुँचाएगा।</p>
-
-      <p><strong>प्रश्न 4.</strong> कंपनी के वकील का कत्ल करने के बाद वज़ीर अली ने अपनी हिफ़ाज़त कैसे की?</p>
-      <p><em>उत्तर —</em> वज़ीर अली ने वकील की हत्या के बाद अपने लोगों के साथ आज़मगढ़ की ओर भागकर वहाँ के शासक की मदद से घाघरा तक पहुंचा और जंगलों में छिपकर अपनी शक्ति बढ़ाई।</p>
-
-      <p><strong>प्रश्न 5.</strong> सवार के जाने के बाद कर्नल क्यों हक्का-बक्का रह गया?</p>
-      <p><em>उत्तर —</em> क्योंकि उसी सवार ने, जो वज़ीर अली था, कर्नल के खेमे में घुसकर परिचय लेकर कारतूस हासिल किए और चुपके से चला गया — कर्नल को पहचान नहीं हुई।</p>
-    </section>
-
-    <!-- LIKHIT (kh) -->
-    <section id="likhit-b" class="qa-block" aria-labelledby="likhitBTitle">
-      <h2 id="likhitBTitle">लिखित — (ख) — 50-60 शब्दों के उत्तर</h2>
-
-      <p><strong>प्रश्न 1.</strong> लेफ्टीनेंट को ऐसा क्यों लगा कि कंपनी के खिलाफ़ सारे हिंदुस्तान में एक लहर दौड़ गई है?</p>
-      <p><em>उत्तर —</em> कई जगहों पर राजा और नवाब कंपनी का विरोध कर रहे थे; जुड़े राष्ट्रों ने हमले की दावत दी थी—इससे उसे लगा कि पूरे हिंदुस्तान में कंपनी के खिलाफ एक व्यापक लहर उठ रही है।</p>
-
-      <p><strong>प्रश्न 2.</strong> वज़ीर अली ने कंपनी के वकील का कत्ल क्यों किया?</p>
-      <p><em>उत्तर —</em> वज़ीर अली को जनरल के बुलावे से रोका गया और वकील ने उसकी शिकायत का अनादर किया। इससे उसका स्वाभिमान ठेस पहुंचा और भी कंपनी सरकार से नफ़रत थी; इन कारणों से उसने वकील का कत्ल कर दिया।</p>
-
-      <p><strong>प्रश्न 3.</strong> सवार ने कर्नल से कारतूस कैसे हासिल किए?</p>
-      <p><em>उत्तर —</em> सवार — जो वज़ीर अली था — ने अपनी चतुराई का प्रयोग कर कर्नल के खेमे में घुसकर, पहचान छिपाकर और चालाकी से कर्नल से कारतूस प्राप्त कर लिए।</p>
-
-      <p><strong>प्रश्न 4.</strong> वज़ीर अली एक जाँबाज़ सिपाही था, कैसे? स्पष्ट कीजिए।</p>
-      <p><em>उत्तर —</em> वज़ीर अली बहादुर और निडर था; उसने अपनी जान की बाजी लगाकर अंग्रेज़ों के ठिकानों में घुसकर कारतूस हासिल किए और कई जोखिमपूर्ण विद्रोही काम किए — यह उसके साहस और जाँबाजी का परिचायक है।</p>
-    </section>
-
-    <!-- LIKHIT (g) -->
-    <section id="likhit-c" class="qa-block" aria-labelledby="likhitCTitle">
-      <h2 id="likhitCTitle">लिखित — (ग) — आशय स्पष्ट कीजिए</h2>
-
-      <p><strong>प्रश्न 1.</strong> "मुट्ठीभर आदमी और ये दमखम" — आशय बताइए।</p>
-      <p><em>उत्तर —</em> आशय यह है कि वज़ीर अली के साथ केवल कुछ सीमित संख्या में लोग थे, पर वे इतने शक्तिशाली तथा चतुर थे कि बड़ी अंग्रेज़ी फौज भी उन्हें पकड़ नहीं पाई — यानी कम संख्या में भी उनकी शक्ति बड़ी थी।</p>
-
-      <p><strong>प्रश्न 2.</strong> "गर्द तो ऐसे उड़ रही है..." — इस वाक्य का आशय बताइए।</p>
-      <p><em>उत्तर —</em> यह दिखाता है कि वज़ीर अली अकेला होते हुए भी ऐसी शक्ति और गति का प्रदर्शन करता है कि उसकी उपस्थिति मानो पूरा काफ़िला हो; घोड़े की टापों से उड़ती धूल से ऐसा असर होता है।</p>
-    </section>
-
-    <p style="margin-top:14px;color:rgba(0,0,0,0.55);font-size:13px;">यह Q&amp;A आपके द्वारा दिया गया स्रोत-संदेश अनुवाद/संरचना के अनुसार प्रस्तुत किया गया है। यदि आप चाहते हैं कि मैं इन उत्तरों को अलग-अलग chapter-pages या printable PDF में बदल दूँ, बताइए।</p>
-  </main>
+    <a href="hindi.html" class="back" aria-label="Back to Hindi subject">← विषय पृष्ठ पर वापस जाएँ</a>
+  </article>
 </div>
 
 <script>
-/* small theme + star background reuse:
-   - reads theme from localStorage key 'vlearn-theme' used by index.html
-   - applies basic color mapping to CSS variables used above
-   - draws a lightweight star background (non-animated for performance)
-*/
+/* small starfield + theme sync (reads localStorage key used by index) */
 (function(){
-  const map = {
-    light: {bg:'#ffffff', fg:'#001d3d', navBg:'rgba(255,255,255,0.95)'},
-    dark:  {bg:'#000000', fg:'#bfefff', navBg:'rgba(0,0,0,0.78)'},
-    retro: {bg:'#001a33', fg:'#ffffff', navBg:'rgba(0,26,51,0.9)'},
-    radio: {bg:'#d6ff7a', fg:'#164a00', navBg:'rgba(230,255,170,0.95)'},
-    lava:  {bg:'#fff6e8', fg:'#6b0000', navBg:'rgba(255,230,170,0.95)'},
-    glitch:{bg:'#050406', fg:'#e6f7ff', navBg:'rgba(2,2,2,0.85)'},
-    sgs:   {bg:'#061235', fg:'#ffffff', navBg:'rgba(6,18,53,0.9)'}
-  };
-  const theme = localStorage.getItem('vlearn-theme') || 'light';
-  const cfg = map[theme] || map.light;
-  document.documentElement.style.setProperty('--bg', cfg.bg);
-  document.documentElement.style.setProperty('--fg', cfg.fg);
-  document.documentElement.style.setProperty('--nav-bg', cfg.navBg);
-  // Also set other variables used in page
-  document.documentElement.style.setProperty('--card-bg', cfg.bg === '#ffffff' ? 'rgba(255,255,255,0.96)' : 'rgba(255,255,255,0.02)');
-
-  // draw simple starfield (static) — density scales with screen size
-  const canvas = document.getElementById('bgCanvas');
-  function resizeCanvas(){ canvas.width = innerWidth; canvas.height = innerHeight; drawStars(); }
-  function drawStars(){
-    const ctx = canvas.getContext('2d');
+  const canvas = document.getElementById('spaceCanvas');
+  const ctx = canvas.getContext('2d');
+  function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; draw(); }
+  function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    // choose dot color based on theme: white on dark, dark navy on light
-    const dotColor = (theme === 'light' || theme === 'lava' || theme === 'radio') ? '#001f3f' : '#ffffff';
-    const density = Math.floor((canvas.width * canvas.height) / 25000); // ~600-2000 typical
+    // choose star color based on theme (simple mapping)
+    const theme = localStorage.getItem('vlearn-theme') || 'light';
+    const darkThemes = ['dark','retro','glitch','sgs'];
+    const starColor = darkThemes.includes(theme) ? '#ffffff' : '#001f3f';
+    const density = Math.max(220, Math.floor((canvas.width*canvas.height)/18000)); // adjust
     for(let i=0;i<density;i++){
-      const x = Math.random()*canvas.width;
-      const y = Math.random()*canvas.height;
-      const r = Math.random()*1.4 + 0.2;
       ctx.beginPath();
-      ctx.fillStyle = dotColor;
-      ctx.globalAlpha = Math.random()*0.9 + 0.2;
-      ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = starColor;
+      ctx.globalAlpha = Math.random()*0.9 + 0.1;
+      const r = Math.random()*1.4 + 0.2;
+      ctx.arc(Math.random()*canvas.width, Math.random()*canvas.height, r, 0, Math.PI*2);
+      ctx.fill();
     }
     ctx.globalAlpha = 1;
   }
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
+  window.addEventListener('resize', resize);
+  resize();
+
+  // apply basic theme colors to page elements (keeps parity with index)
+  const theme = localStorage.getItem('vlearn-theme') || 'light';
+  const map = {
+    light: {bg:'#ffffff', fg:'#001f3f', nav:'rgba(255,255,255,0.95)'},
+    dark:  {bg:'#000000', fg:'#bfefff', nav:'rgba(0,0,0,0.78)'},
+    retro: {bg:'#001a33', fg:'#ffffff', nav:'rgba(0,26,51,0.92)'},
+    radio: {bg:'#d6ff7a', fg:'#164a00', nav:'rgba(230,255,170,0.95)'},
+    lava:  {bg:'#fff6e8', fg:'#6b0000', nav:'rgba(255,230,170,0.95)'},
+    glitch:{bg:'#050406', fg:'#e6f7ff', nav:'rgba(2,2,2,0.85)'},
+    sgs:   {bg:'#061235', fg:'#ffffff', nav:'rgba(6,18,53,0.9)'}
+  };
+  const cfg = map[theme] || map.light;
+  document.body.style.background = cfg.bg;
+  document.body.style.color = cfg.fg;
+  document.querySelectorAll('.navbar').forEach(n=> n.style.background = cfg.nav);
 
 })();
 </script>
