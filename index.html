@@ -6,165 +6,245 @@
 <title>VLearn — Sneak Peek</title>
 <link rel="icon" type="image/png" href="Logo.png">
 <style>
+  /* ============ COLOR / FONT VARIABLES ============ */
   :root{
     --bg: #e6f5ff;
     --fg: #003a66;
-    --accent: #00aaff;
     --muted: rgba(0,0,0,0.45);
-    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    --font-display: "Merriweather", serif;
+    --accent: #0077cc;
+    --nav-bg: rgba(255,255,255,0.9);
+    --nav-fg: #001f3f;
+    --dropdown-bg: #fff;
+    --star-color: #ffffff;
+    --star-moving: 1; /* 1 => moving, 0 => flicker only */
   }
   html,body{ height:100%; margin:0; padding:0; }
-  body{ font-family:var(--font-sans); background:var(--bg); color:var(--fg); overflow:hidden; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+  body{ font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--bg); color:var(--fg); overflow:hidden; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
 
+  /* full app */
   .app{ height:100vh; width:100vw; position:relative; }
 
+  /* generic screen sections (loader/welcome/rick/space) */
   .screen{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center; z-index:5; }
   .hidden{ display:none !important; }
 
-  /* Loading */
-  .loader-card{ width:86%; max-width:780px; padding:24px; border-radius:14px; backdrop-filter: blur(6px); background:rgba(255,255,255,0.72); box-shadow:0 18px 36px rgba(2,6,23,0.12); }
-  .logo-title{ font-family:var(--font-display); font-size:26px; color:var(--fg); margin:0 0 8px; }
+  /* --- LOADER --- */
+  .loader-card{ width:86%; max-width:780px; padding:24px; border-radius:14px; backdrop-filter: blur(6px); background:rgba(255,255,255,0.84); box-shadow:0 18px 36px rgba(2,6,23,0.08); }
+  .logo-title{ font-family: "Merriweather", serif; font-size:24px; color:var(--fg); margin:0 0 8px; }
   .loader-sub{ color:var(--muted); font-size:14px; margin-bottom:12px; }
-  .loader-bar{ width:100%; height:12px; background:#e6f3fb; border-radius:8px; overflow:hidden; }
+  .loader-bar{ width:100%; height:12px; background: #e6f3fb; border-radius:8px; overflow:hidden; }
   .loader-bar .fill{ width:0; height:100%; background:linear-gradient(90deg,var(--accent), #7edbff); animation:fillAnim 4s linear forwards; border-radius:8px; }
   @keyframes fillAnim { from{width:0} to{width:100%} }
 
-  /* Theme button and panel */
-  .theme-btn{ position:fixed; top:14px; right:14px; z-index:80; background:rgba(0,0,0,0.56); color:#fff; border:0; padding:10px 12px; border-radius:10px; cursor:pointer; display:flex; gap:8px; align-items:center; font-weight:700; }
-  .theme-panel{ position:fixed; top:56px; right:14px; z-index:85; display:none; background:#fff; color:#111; border-radius:10px; padding:10px; box-shadow:0 12px 28px rgba(2,6,23,0.2); min-width:200px; }
-  .theme-panel button{ display:block; width:100%; padding:8px; border:0; background:transparent; text-align:left; cursor:pointer; font-weight:700; border-radius:6px; margin:4px 0; }
+  /* theme control (top-right) */
+  .theme-btn{ position:fixed; top:14px; right:14px; z-index:120; background:rgba(0,0,0,0.56); color:#fff; border:0; padding:10px 12px; border-radius:10px; cursor:pointer; display:flex; gap:8px; align-items:center; font-weight:700; }
+  .theme-panel{ position:fixed; top:56px; right:14px; z-index:125; display:none; background:var(--nav-bg); color:var(--nav-fg); border-radius:10px; padding:10px; box-shadow:0 12px 28px rgba(0,0,0,0.12); min-width:220px; }
+  .theme-panel button{ display:block; width:100%; padding:10px 12px; border:0; background:transparent; text-align:left; cursor:pointer; font-weight:700; border-radius:6px; margin:4px 0; color:var(--nav-fg); }
   .theme-panel button:hover{ background:rgba(0,0,0,0.04); }
 
-  /* Welcome */
-  .welcome-wrap{ width:94%; max-width:1100px; padding:22px; border-radius:12px; background:rgba(255,255,255,0.72); backdrop-filter:blur(6px); box-shadow:0 18px 36px rgba(2,6,23,0.08); }
-  .welcome-lines{ font-family:var(--font-display); font-size:44px; color:var(--fg); line-height:0.96; letter-spacing:0.4px; display:inline-block; }
+  /* --- WELCOME --- */
+  .welcome-wrap{ width:94%; max-width:1100px; padding:22px; border-radius:12px; background:rgba(255,255,255,0.86); backdrop-filter:blur(6px); box-shadow:0 18px 36px rgba(2,6,23,0.06); }
+  .welcome-lines{ font-family: "Merriweather", serif; font-size:40px; color:var(--fg); line-height:0.96; letter-spacing:0.2px; display:inline-block; }
   .copyright{ position:fixed; bottom:18px; left:50%; transform:translateX(-50%); font-size:13px; color:var(--muted); z-index:70; }
-
   .letter{ display:inline-block; opacity:0; transform:translate3d(0,0,0) rotate(0deg); transition: transform 850ms cubic-bezier(.2,.8,.2,1), opacity 450ms ease-in-out; will-change:transform,opacity; color:var(--fg); }
 
-  /* Rickroll */
+  /* --- RICKROLL --- */
   #rick{ background:#000; }
   #rick video{ width:100%; height:100%; object-fit:cover; }
 
-  /* Space & stars */
-  #space{ position:relative; inset:0; width:100%; height:100%; background:#000; color:#fff; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  /* --- SPACE / STARFIELD --- */
+  #space{ position:relative; inset:0; width:100%; height:100%; background:#000; color:#fff; overflow:hidden; display:flex; align-items:flex-start; justify-content:center; padding-top:18px; }
   canvas#stars{ position:absolute; inset:0; width:100%; height:100%; z-index:10; display:block; }
-  .glitch-bg{ position:absolute; inset:0; z-index:6; background: linear-gradient(120deg,#000,#ff0022,#fff,#00f7ff); background-size:400% 400%; animation:glow 8s linear infinite; opacity:0.9; mix-blend-mode:screen; }
+  .glitch-bg{ position:absolute; inset:0; z-index:6; background: linear-gradient(120deg,#000,#ff0022,#fff,#00f7ff); background-size:400% 400%; animation:glow 8s linear infinite; opacity:0.95; mix-blend-mode:screen; }
   @keyframes glow{ 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
-  /* Centered menu card (now large, no scale animation) */
-  .menu-wrap{ position:relative; z-index:20; width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
-  .menu-card{ width:90%; max-width:1200px; text-align:center; padding:36px; border-radius:14px; transform-origin:center center; transform:scale(1); transition:none; background:rgba(0,0,0,0.36); }
-  .coming-title{ font-family:var(--font-display); font-size:140px; color:#fff; margin:0; text-shadow:0 10px 30px rgba(0,0,0,0.6); line-height:0.9; }
-
-  @media (max-width:1200px){
-    .coming-title{ font-size:96px; }
+  /* ============ NAV BAR (Image 2 style) ============ */
+  .navbar {
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    background:var(--nav-bg);
+    color:var(--nav-fg);
+    border-radius:28px;
+    overflow:hidden;
+    width:92%;
+    max-width:1200px;
+    padding:0;
+    margin:10px auto;
+    z-index:30;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    position:relative;
   }
-  @media (max-width:720px){
-    .welcome-lines{ font-size:28px; }
-    .coming-title{ font-size:44px; }
-    .menu-card{ padding:18px; }
-    .loader-card{ padding:14px; }
-    .theme-panel{ right:8px; min-width:160px; }
+  .navbar a, .navbar button.dropbtn {
+    display:block;
+    padding:18px 26px;
+    color:var(--nav-fg);
+    text-decoration:none;
+    font-weight:700;
+    background:transparent;
+    border:0;
+    cursor:pointer;
+    font-size:18px;
+  }
+  .navbar a:hover, .navbar button.dropbtn:hover{ background: rgba(0,0,0,0.04); }
+
+  .nav-spacer{ flex:1; } /* push some items to right if needed */
+
+  /* Dropdown */
+  .dropdown { position:relative; }
+  .dropdown-content {
+    display:none;
+    position:absolute;
+    top:100%;
+    left:0;
+    background:var(--dropdown-bg);
+    min-width:180px;
+    box-shadow:0 10px 28px rgba(0,0,0,0.15);
+    border-radius:8px;
+    z-index:40;
+    overflow:hidden;
+  }
+  .dropdown-content a {
+    padding:12px 14px; display:block; color:var(--nav-fg); text-decoration:none; font-weight:700;
+    white-space:nowrap;
+  }
+  .dropdown-content a:hover{ background:rgba(0,0,0,0.04); }
+  .dropdown:hover .dropdown-content{ display:block; }
+
+  /* locked style */
+  .locked{ opacity:0.45; cursor:pointer; }
+
+  /* small responsive */
+  @media (max-width:900px){
+    .navbar a, .navbar button.dropbtn { padding:12px 14px; font-size:16px; }
+    .dropdown-content { min-width:140px; }
   }
 
-  /* theme classes (affect welcome color and base UI) */
-  .theme-dark{ --bg:#000; --fg:#bfefff; --accent:#6ee7ff; }
-  .theme-light{ --bg:#fff; --fg:#003a66; --accent:#0077cc; }
-  .theme-retro{ --bg:#001a33; --fg:#fff; --accent:#66ffff; font-family:'Courier New',monospace; }
-  .theme-radio{ --bg:#d6ff7a; --fg:#2f7f00; --accent:#6bd400; }
-  .theme-lava{ --bg: linear-gradient(180deg,#ffd84d,#ff7a00); --fg:#6b0000; --accent:#ff6a00; }
-  .theme-sgs{ --bg: linear-gradient(180deg,#061235,#0b2b45); --fg:#fff; --accent:#ffb86b; }
-  .theme-glitch{ --bg:#050406; --fg:#e6f7ff; --accent:#00ffff; }
+  /* themes: the page uses CSS variables above; JS will set them per theme */
+  /* small helper: content area under nav (so page isn't empty) */
+  .page-content-placeholder{ width:92%; max-width:1200px; margin:18px auto; background: rgba(255,255,255,0.02); min-height:320px; border-radius:12px; z-index:20; position:relative; padding:18px; color:var(--nav-fg); }
+
+  /* modal for locked message (nice) */
+  .modal {
+    position:fixed; top:0; left:0; right:0; bottom:0; display:flex; align-items:center; justify-content:center; z-index:200;
+    background: rgba(0,0,0,0.45); visibility:hidden; opacity:0; transition:opacity .18s ease;
+  }
+  .modal.show{ visibility:visible; opacity:1; }
+  .modal .card{
+    background:var(--nav-bg); color:var(--nav-fg); padding:22px; border-radius:10px; box-shadow:0 12px 36px rgba(0,0,0,0.2); max-width:420px; text-align:center;
+  }
+  .modal .card button{ margin-top:12px; padding:8px 12px; font-weight:700; border-radius:8px; border:0; cursor:pointer; }
+
+  /* small typography */
+  h1,h2,h3,p{ margin:0; padding:0; }
+
 </style>
 </head>
 <body>
-<div id="app" class="app theme-light" aria-live="polite">
+<div id="app" class="app" aria-live="polite">
   <!-- Theme control -->
-  <button class="theme-btn" id="themeBtn">Theme</button>
+  <button class="theme-btn" id="themeBtn" aria-label="Theme selector">Theme</button>
   <div class="theme-panel" id="themePanel" role="dialog" aria-hidden="true">
-    <div style="font-weight:800;margin-bottom:6px;">Choose theme</div>
-    <button data-theme="theme-dark">Dark</button>
-    <button data-theme="theme-light">Light</button>
-    <button data-theme="theme-retro">Retro DOS</button>
-    <button data-theme="theme-radio">Radioactive</button>
-    <button data-theme="theme-lava">Lava</button>
-    <button data-theme="theme-glitch">Glitched</button>
-    <button data-theme="theme-sgs">SGS</button>
+    <div style="font-weight:900;margin-bottom:8px;">Choose theme</div>
+    <button data-theme="dark">Dark</button>
+    <button data-theme="light">Light</button>
+    <button data-theme="retro">Retro DOS</button>
+    <button data-theme="radio">Radioactive</button>
+    <button data-theme="lava">Lava</button>
+    <button data-theme="glitch">Glitched</button>
+    <button data-theme="sgs">SGS</button>
   </div>
 
-  <!-- Loading screen -->
+  <!-- Loading (4s) -->
   <section id="loading" class="screen" aria-hidden="false">
     <div class="loader-card" role="status">
       <div class="logo-title">VLearn</div>
       <div class="loader-sub">Loading the VLearn Directory — please wait</div>
       <div class="loader-bar" aria-hidden="true"><div class="fill"></div></div>
-      <div class="loader-meta">Preparing answers • Aligning chapters • Applying finishing touches</div>
+      <div class="loader-meta" style="margin-top:10px; color:var(--muted);">Preparing answers • Aligning chapters • Applying finishing touches</div>
     </div>
   </section>
 
-  <!-- Welcome screen -->
+  <!-- Welcome (4s) -->
   <section id="welcome" class="screen hidden" aria-hidden="true">
     <div class="welcome-wrap"><div id="welcomeLines" class="welcome-lines"></div></div>
     <div class="copyright">©TREDT Publications Studios 2025 - 2026</div>
   </section>
 
-  <!-- Rickroll -->
+  <!-- Rickroll (3s) -->
   <section id="rick" class="screen hidden" aria-hidden="true">
     <video id="rickVideo" src="rickroll.mp4" playsinline preload="auto"></video>
   </section>
 
-  <!-- Space + starfield + center Coming Soon -->
+  <!-- Space with starfield & nav bar (final stage) -->
   <section id="space" class="screen hidden" aria-hidden="true">
     <div id="glitchBg" class="glitch-bg" style="display:none;"></div>
     <canvas id="stars"></canvas>
-    <!-- replace menu-wrap with: -->
-<nav class="nav-bar">
-  <div class="nav-logo">VLearn</div>
-  <ul class="nav-links">
-    <li><a href="#">Home</a></li>
-    <li class="dropdown">
-      <a href="#">Subjects ▾</a>
-      <ul class="dropdown-content">
-        <li><a href="hindi.html">Hindi</a></li>
-        <li><a href="#" class="locked">English</a></li>
-        <li><a href="#" class="locked">Maths</a></li>
-        <li><a href="#" class="locked">Science</a></li>
-        <li><a href="#" class="locked">SST</a></li>
-      </ul>
-    </li>
-    <li><a href="practice.html">Practice Sheet</a></li>
-    <li><a href="answers.html">Answer Key</a></li>
-    <li><a href="copyright.html">Copyright</a></li>
-    <li><a href="about.html">About Us</a></li>
-    <li><a href="credits.html">Credit</a></li>
-  </ul>
-</nav>
+
+    <!-- NAV BAR (Image 2) -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+      <a href="index.html" class="brand">VLEARN</a>
+
+      <div class="dropdown">
+        <button class="dropbtn">SUBJECTS ▾</button>
+        <div class="dropdown-content" id="subjectsDrop">
+          <a href="hindi.html">Hindi</a>
+          <a href="#" class="locked">English</a>
+          <a href="#" class="locked">Maths</a>
+          <a href="#" class="locked">Science</a>
+          <a href="#" class="locked">SST</a>
+        </div>
+      </div>
+
+      <a href="#" style="margin-left:8px;">PRACTICE SHEET</a>
+      <a href="#" >ANSWER KEY</a>
+      <div class="nav-spacer"></div>
+      <a href="#" >Copyright(c)</a>
+      <a href="#" >About Us</a>
+      <a href="#" >Credit</a>
+    </nav>
+
+    <!-- page placeholder below nav -->
+    <div class="page-content-placeholder" id="pageContent">
+      <!-- You can load content dynamically or navigate to other pages -->
+      <h2 style="font-size:22px; margin-bottom:10px;">VLearn Directory</h2>
+      <p style="color:var(--muted);">Choose a subject from the menu to continue. Locked items show a "Locked for now" message.</p>
+    </div>
   </section>
+
+  <!-- Locked modal -->
+  <div class="modal" id="modalLocked" role="dialog" aria-modal="true">
+    <div class="card">
+      <h3 style="margin-bottom:8px;">LOCKED FOR NOW</h3>
+      <p>COMING SOON</p>
+      <button id="modalClose">OK</button>
+    </div>
+  </div>
 </div>
 
 <script>
+/* ============ ORCHESTRATION & THEME + STARFIELD ============ */
 (function(){
+  // elements
   const app = document.getElementById('app');
   const loading = document.getElementById('loading');
   const welcome = document.getElementById('welcome');
   const rick = document.getElementById('rick');
   const space = document.getElementById('space');
-  const menuCard = document.getElementById('menuCard');
-  const welcomeLines = document.getElementById('welcomeLines');
   const rickVideo = document.getElementById('rickVideo');
   const themeBtn = document.getElementById('themeBtn');
   const themePanel = document.getElementById('themePanel');
-  const glitchBg = document.getElementById('glitchBg');
+  const modalLocked = document.getElementById('modalLocked');
+  const modalClose = document.getElementById('modalClose');
 
+  // welcome text
   const welcomeText = "WELCOME TO THE\nVLEARN\nAN DIRECTORY FOR ALL CBSE CLASS X ANSWERS";
 
-  /* Welcome letter setup and animation */
+  // per-letter welcome
   function setupWelcome(){
-    welcomeLines.innerHTML = '';
-    const lines = welcomeText.split('\n');
-    lines.forEach((ln, li) => {
+    const el = document.getElementById('welcomeLines');
+    el.innerHTML = '';
+    welcomeText.split('\n').forEach((ln, li) => {
       const row = document.createElement('div');
       row.style.display = 'block';
       row.style.margin = (li===1 ? '6px 0 0 0' : '0');
@@ -181,100 +261,158 @@
         sp.style.transitionDelay = `${Math.random()*650}ms`;
         row.appendChild(sp);
       }
-      welcomeLines.appendChild(row);
+      el.appendChild(row);
     });
   }
-
   function animateWelcomeIn(){
     const letters = welcome.querySelectorAll('.letter');
-    letters.forEach((el, idx)=>{
-      setTimeout(()=> {
-        el.style.transform = 'translate3d(0,0,0) rotate(0deg)';
-        el.style.opacity = '1';
-      }, 20 * idx);
-    });
+    letters.forEach((el, idx)=> setTimeout(()=>{ el.style.transform='translate3d(0,0,0) rotate(0deg)'; el.style.opacity='1'; }, 20*idx));
   }
 
-  /* Starfield engine: increased density for more dots */
-  let starStop = null;
-  const themeCfg = {
-    'theme-dark':   { bg:'#000000', dot:'#ffffff', moving:true, retro:false },
-    'theme-light':  { bg:'#ffffff', dot:'#001f3f', moving:true, retro:false },
-    'theme-retro':  { bg:'#001a33', dot:'#ffffff', moving:true, retro:true }, // slow (~5fps)
-    'theme-radio':  { bg:'#d6ff7a', dot:'#2f7f00', moving:true, retro:false },
-    'theme-lava':   { bg:'#ffd84d', dot:'#6b0000', moving:true, retro:false },
-    'theme-glitch': { bg:'glitch', dotNeg:['#ffffff','#00ffff','#000000','#ff0000'], moving:false, flicker:true },
-    'theme-sgs':    { bg:'#061235', dot:'#ff8a3d', moving:true, retro:false }
+  /* ============ THEME: config + persistence ============ */
+  const THEMES = {
+    dark: {
+      '--bg':'#000000', '--fg':'#bfefff','--muted':'rgba(255,255,255,0.6)','--accent':'#6ee7ff',
+      navBg:'rgba(0,0,0,0.76)', navFg:'#dff8ff', dropdown:'#111',
+      spaceBg:'#000000', star:'#ffffff', starMoving:1, glitch:false
+    },
+    light: {
+      '--bg':'#ffffff', '--fg':'#003a66','--muted':'rgba(0,0,0,0.45)','--accent':'#0077cc',
+      navBg:'rgba(255,255,255,0.95)', navFg:'#003a66', dropdown:'#fff',
+      spaceBg:'#ffffff', star:'#001f3f', starMoving:1, glitch:false
+    },
+    retro: {
+      '--bg':'#001a33', '--fg':'#ffffff','--muted':'rgba(255,255,255,0.85)','--accent':'#66ffff',
+      navBg:'rgba(0,26,51,0.92)', navFg:'#fff', dropdown:'#001a33',
+      spaceBg:'#001a33', star:'#ffffff', starMoving:0.2, glitch:false
+    },
+    radio: {
+      '--bg':'#d6ff7a','--fg':'#2f7f00','--muted':'rgba(0,0,0,0.35)','--accent':'#6bd400',
+      navBg:'rgba(230,255,170,0.95)', navFg:'#164a00', dropdown:'#eaffb8',
+      spaceBg:'#d6ff7a', star:'#2f7f00', starMoving:1, glitch:false
+    },
+    lava: {
+      '--bg':'linear-gradient(180deg,#ffd84d,#ff7a00)','--fg':'#6b0000','--muted':'rgba(0,0,0,0.45)','--accent':'#ff6a00',
+      navBg:'rgba(255,230,170,0.95)', navFg:'#6b0000', dropdown:'#ffe7b0',
+      spaceBg:'#ffd84d', star:'#6b0000', starMoving:1, glitch:false
+    },
+    glitch: {
+      '--bg':'#050406','--fg':'#e6f7ff','--muted':'rgba(255,255,255,0.6)','--accent':'#00ffff',
+      navBg:'rgba(2,2,2,0.85)', navFg:'#e6f7ff', dropdown:'#070707',
+      spaceBg:'glitch', starNeg:['#ffffff','#00ffff','#000000','#ff0000'], starMoving:0, glitch:true
+    },
+    sgs: {
+      '--bg':'linear-gradient(180deg,#061235,#0b2b45)','--fg':'#ffffff','--muted':'rgba(255,255,255,0.85)','--accent':'#ffb86b',
+      navBg:'rgba(6,18,53,0.9)', navFg:'#fff', dropdown:'#05213b',
+      spaceBg:'#061235', star:'#ff8a3d', starMoving:1, glitch:false
+    }
   };
-  let currentTheme = 'theme-light';
 
-  function configureSpaceBg(theme){
-    const cfg = themeCfg[theme] || themeCfg['theme-light'];
-    if(cfg.bg === 'glitch'){ glitchBg.style.display = 'block'; space.style.background = '#000'; }
-    else { glitchBg.style.display = 'none'; space.style.background = cfg.bg; }
+  function applyTheme(name){
+    const cfg = THEMES[name] || THEMES.light;
+    // set CSS variables
+    Object.keys(cfg).forEach(k=>{
+      if(k.startsWith('--')) document.documentElement.style.setProperty(k, cfg[k]);
+    });
+    // set nav / dropdown colors (these are not CSS vars to keep things simple)
+    document.documentElement.style.setProperty('--nav-bg', cfg.navBg);
+    document.documentElement.style.setProperty('--nav-fg', cfg.navFg);
+    document.documentElement.style.setProperty('--dropdown-bg', cfg.dropdown || cfg.navBg);
+    // space background handled separately
+    currentTheme = name;
+    localStorage.setItem('vlearn-theme', name);
+    // if starfield active, restart with new theme settings
+    if(!space.classList.contains('hidden')) restartStarfield();
+    // if glitch, show glitch overlay
+    document.getElementById('glitchBg').style.display = cfg.glitch ? 'block' : 'none';
   }
 
-  function startStars(){
-    stopStars();
-    const cfg = themeCfg[currentTheme] || themeCfg['theme-light'];
-    configureSpaceBg(currentTheme);
+  // theme UI wiring
+  themeBtn.addEventListener('click', (e)=>{ e.stopPropagation(); themePanel.style.display = themePanel.style.display === 'block' ? 'none' : 'block'; });
+  document.addEventListener('click', (e)=>{ if(themePanel.style.display === 'block' && !themePanel.contains(e.target) && e.target !== themeBtn) themePanel.style.display='none'; });
+  document.querySelectorAll('.theme-panel button').forEach(b => b.addEventListener('click', ()=> applyTheme(b.getAttribute('data-theme')) ) );
 
-    const c = document.getElementById('stars');
-    c.width = window.innerWidth; c.height = window.innerHeight;
-    const ctx = c.getContext('2d');
-    ctx.clearRect(0,0,c.width,c.height);
+  // persist and apply saved theme
+  let currentTheme = localStorage.getItem('vlearn-theme') || 'light';
+  applyTheme(currentTheme);
 
-    // INCREASED DENSITY: divide by smaller number => more stars
-    const density = Math.max(120, Math.floor((c.width*c.height)/50000)); // more dots
+  /* ============ STARFIELD ============ */
+  // Change density here if you want a lot more / fewer dots.
+  // WARNING: very high numbers (50k+) may be heavy on CPU on many devices.
+  const STAR_DENSITY = 4000; // default dots — set to 50000 for ~50k (may be slow)
+  let starAnimationStop = null;
 
+  function startStarfield(){
+    stopStarfield();
+    const cfg = THEMES[currentTheme] || THEMES.light;
+    const canvas = document.getElementById('stars');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // configure background
+    if(cfg.spaceBg === 'glitch'){ document.getElementById('glitchBg').style.display = 'block'; canvas.style.background = '#000'; }
+    else { document.getElementById('glitchBg').style.display = 'none'; canvas.style.background = cfg.spaceBg || cfg.spaceBg; canvas.style.background = cfg.spaceBg; }
+
+    // populate stars based on theme behavior
     const stars = [];
-    if(cfg.flicker && Array.isArray(cfg.dotNeg)){
-      for(let i=0;i<density;i++){
-        stars.push({ x:Math.random()*c.width, y:Math.random()*c.height, r:Math.random()*2+0.6, color: cfg.dotNeg[Math.floor(Math.random()*cfg.dotNeg.length)], delay: Math.random()*1200 });
+    if(cfg.glitch && Array.isArray(cfg.starNeg)){
+      // static dots that flicker (glitch)
+      for(let i=0;i<STAR_DENSITY;i++){
+        stars.push({ x:Math.random()*canvas.width, y:Math.random()*canvas.height, r:Math.random()*1.6+0.6, color: cfg.starNeg[Math.floor(Math.random()*cfg.starNeg.length)], delay: Math.random()*1400 });
       }
       let raf;
       function loop(t){
-        ctx.clearRect(0,0,c.width,c.height);
+        ctx.clearRect(0,0,canvas.width,canvas.height);
         stars.forEach(s=>{
           const v = Math.abs(Math.sin((t + s.delay)*0.004 + s.r));
-          if(v>0.6){
+          if(v > 0.6){
             ctx.fillStyle = s.color;
-            ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
           }
         });
         raf = requestAnimationFrame(loop);
       }
       raf = requestAnimationFrame(loop);
-      starStop = ()=>{ cancelAnimationFrame(raf); ctx.clearRect(0,0,c.width,c.height); };
-      window.addEventListener('resize', () => { c.width=window.innerWidth; c.height=window.innerHeight; });
-    } else if(cfg.retro){
-      for(let i=0;i<density;i++){
-        stars.push({ x:Math.random()*c.width, y:Math.random()*c.height, r:Math.random()*1.6+0.4 });
+      starAnimationStop = ()=>{ cancelAnimationFrame(raf); ctx.clearRect(0,0,canvas.width,canvas.height); };
+    } else if(cfg.starMoving && cfg.starMoving < 1){
+      // retro low-FPS-ish: use interval ~200ms (~5fps)
+      for(let i=0;i<STAR_DENSITY;i++){
+        stars.push({ x:Math.random()*canvas.width, y:Math.random()*canvas.height, r:Math.random()*1.6+0.3 });
       }
       const id = setInterval(()=>{
-        ctx.clearRect(0,0,c.width,c.height);
+        ctx.clearRect(0,0,canvas.width,canvas.height);
         stars.forEach(s=>{
           s.x += (Math.random()-0.5)*3;
           s.y += (Math.random()-0.5)*3;
-          if(s.x<0) s.x=c.width; if(s.x>c.width) s.x=0;
-          if(s.y<0) s.y=c.height; if(s.y>c.height) s.y=0;
-          ctx.fillStyle = cfg.dot;
+          if(s.x < 0) s.x = canvas.width; if(s.x > canvas.width) s.x = 0;
+          if(s.y < 0) s.y = canvas.height; if(s.y > canvas.height) s.y = 0;
+          ctx.fillStyle = cfg.star || '#fff';
           ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
         });
-      }, 200); // ~5 fps
-      starStop = ()=>{ clearInterval(id); ctx.clearRect(0,0,c.width,c.height); };
-      window.addEventListener('resize', () => { c.width=window.innerWidth; c.height=window.innerHeight; });
+      }, 200);
+      starAnimationStop = ()=>{ clearInterval(id); ctx.clearRect(0,0,canvas.width,canvas.height); };
     } else {
-      for(let i=0;i<density;i++){
-        stars.push({ x:Math.random()*c.width, y:Math.random()*c.height, r:Math.random()*1.6+0.3, vx:(Math.random()*0.6-0.3)*(0.8+(Math.random())), vy:(Math.random()*0.6-0.3)*(0.8+(Math.random())), alpha:Math.random()*0.7+0.2, color:cfg.dot });
+      // smooth moving stars
+      for(let i=0;i<STAR_DENSITY;i++){
+        stars.push({
+          x:Math.random()*canvas.width,
+          y:Math.random()*canvas.height,
+          r:Math.random()*1.6+0.2,
+          vx:(Math.random()*0.6-0.3)*(0.5+Math.random()*0.8),
+          vy:(Math.random()*0.6-0.3)*(0.5+Math.random()*0.8),
+          alpha: Math.random()*0.7+0.2,
+          color: cfg.star || '#fff'
+        });
       }
       let raf;
       function loop(){
-        ctx.clearRect(0,0,c.width,c.height);
+        ctx.clearRect(0,0,canvas.width,canvas.height);
         stars.forEach(s=>{
           s.x += s.vx; s.y += s.vy;
-          if(s.x<0) s.x=c.width; if(s.x>c.width) s.x=0;
-          if(s.y<0) s.y=c.height; if(s.y>c.height) s.y=0;
+          if(s.x < 0) s.x = canvas.width; if(s.x > canvas.width) s.x = 0;
+          if(s.y < 0) s.y = canvas.height; if(s.y > canvas.height) s.y = 0;
           ctx.globalAlpha = s.alpha;
           ctx.fillStyle = s.color;
           ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
@@ -283,94 +421,53 @@
         raf = requestAnimationFrame(loop);
       }
       raf = requestAnimationFrame(loop);
-      starStop = ()=>{ cancelAnimationFrame(raf); ctx.clearRect(0,0,c.width,c.height); };
-      window.addEventListener('resize', () => { c.width=window.innerWidth; c.height=window.innerHeight; });
+      starAnimationStop = ()=>{ cancelAnimationFrame(raf); ctx.clearRect(0,0,canvas.width,canvas.height); };
     }
+
+    window.addEventListener('resize', ()=>{ canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
   }
 
-  function stopStars(){ if(typeof starStop === 'function'){ try{ starStop(); }catch(e){} starStop = null; } }
+  function stopStarfield(){ if(typeof starAnimationStop === 'function'){ try{ starAnimationStop(); }catch(e){} starAnimationStop = null; } }
+  function restartStarfield(){ stopStarfield(); startStarfield(); }
 
-  /* Theme controls */
-  themeBtn.addEventListener('click',(e)=>{ e.stopPropagation(); themePanel.style.display = themePanel.style.display === 'block' ? 'none' : 'block'; });
-  document.addEventListener('click',(e)=>{ if(themePanel.style.display === 'block' && !themePanel.contains(e.target) && e.target !== themeBtn) themePanel.style.display='none'; });
-  document.querySelectorAll('.theme-panel button').forEach(b=>{ b.addEventListener('click', ()=> setTheme(b.getAttribute('data-theme'))); });
+  /* ============ NAV LOCKS & modal ============ */
+  function showLocked(){ modalLocked.classList.add('show'); }
+  modalClose.addEventListener('click', ()=> modalLocked.classList.remove('show') );
+  document.querySelectorAll('.locked').forEach(l => l.addEventListener('click', (ev)=>{ ev.preventDefault(); showLocked(); }) );
 
-  function applyPerLetterGlitch(){
-    const palette = ['#00FFFF','#00C4FF','#FF006E','#FFFFFF','#00FFAA','#00A6FF'];
-    const letters = welcome.querySelectorAll('.letter');
-    letters.forEach(l=>{ l.classList.add('glitch-letter'); l.style.color = palette[Math.floor(Math.random()*palette.length)]; l.style.animationDelay = `${Math.random()*1.2}s`; });
-  }
-  function clearPerLetterGlitch(){
-    const letters = welcome.querySelectorAll('.letter');
-    letters.forEach(l=>{ l.classList.remove('glitch-letter'); l.style.color=''; l.style.animationDelay=''; });
-  }
-
-  function setTheme(name){
-    app.className = app.className.split(' ').filter(c=>!c.startsWith('theme-')).join(' ');
-    app.classList.add(name);
-    currentTheme = name;
-    if(name === 'theme-glitch') applyPerLetterGlitch(); else clearPerLetterGlitch();
-    if(!space.classList.contains('hidden')){ restartStars(); } else { configureSpaceBg(name); }
-    themePanel.style.display = 'none';
-  }
-
-  function configureSpaceBg(theme){
-    const cfg = themeCfg[theme] || themeCfg['theme-light'];
-    if(cfg.bg === 'glitch'){ glitchBg.style.display = 'block'; space.style.background = '#000'; }
-    else { glitchBg.style.display = 'none'; space.style.background = cfg.bg; }
-  }
-
-  function restartStars(){ stopStars(); startStars(); }
-
-  // Sequence
+  /* ============ SEQUENCE: loading -> welcome -> rick -> space ============ */
   setupWelcome();
-  loading.classList.remove('hidden');
-  welcome.classList.add('hidden');
-  rick.classList.add('hidden');
-  space.classList.add('hidden');
+  loading.classList.remove('hidden'); welcome.classList.add('hidden'); rick.classList.add('hidden'); space.classList.add('hidden');
 
-  setTimeout(()=>{
+  // loader 4s
+  setTimeout(()=> {
     loading.classList.add('hidden');
     welcome.classList.remove('hidden');
-    setTimeout(()=> { animateWelcomeIn(); if(app.classList.contains('theme-glitch')) applyPerLetterGlitch(); }, 80);
+    setTimeout(()=> { animateWelcomeIn(); }, 80);
   }, 4000);
 
-  setTimeout(()=>{
+  // welcome shows 4s then rickroll 3s
+  setTimeout(()=> {
     welcome.classList.add('hidden');
     rick.classList.remove('hidden');
-    (async ()=>{ try{ await rickVideo.play(); }catch(e){ try{ rickVideo.muted=true; await rickVideo.play(); }catch(e){} }})();
+    (async ()=>{ try{ await rickVideo.play(); } catch(e){ try{ rickVideo.muted=true; await rickVideo.play(); }catch(e){}} })();
   }, 8000);
 
-  setTimeout(()=>{
-    try{ rickVideo.pause(); rickVideo.currentTime = 0; }catch(e){}
+  // after rick (3s) show starfield + nav
+  setTimeout(()=> {
+    try{ rickVideo.pause(); rickVideo.currentTime = 0; } catch(e){}
     rick.classList.add('hidden');
     space.classList.remove('hidden');
 
-    configureSpaceBg(currentTheme);
-    startStars();
-
-    // show large Coming Soon immediately (no animation)
-    menuCard.classList.remove('show');
-    menuCard.style.transform = 'scale(1)';
+    // apply theme background + start starfield
+    applyTheme(currentTheme);
+    startStarfield();
   }, 11000);
 
-  // default initial theme
-  setTheme('theme-light');
+  // clean up
+  window.addEventListener('beforeunload', ()=> stopStarfield());
 
-  // hide panel on Esc
-  document.addEventListener('keydown', e=> { if(e.key==='Escape') themePanel.style.display='none'; });
-  window.addEventListener('beforeunload', ()=> stopStars());
 })();
-  // lock the other subjects
-document.querySelectorAll('.locked').forEach(el=>{
-  el.addEventListener('click', e=>{
-    e.preventDefault();
-    alert("LOCKED FOR NOW\nCOMING SOON");
-  });
-});
 </script>
 </body>
 </html>
-
-
-
