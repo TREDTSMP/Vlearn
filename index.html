@@ -119,13 +119,28 @@
   <section id="space" class="screen hidden" aria-hidden="true">
     <div id="glitchBg" class="glitch-bg" style="display:none;"></div>
     <canvas id="stars"></canvas>
-
-    <div class="menu-wrap">
-      <div class="menu-card" id="menuCard" aria-hidden="true">
-        <h1 class="coming-title" id="centerComing">COMING SOON</h1>
-        <p style="color:rgba(255,255,255,0.85); margin-top:12px; font-weight:600;">VLearn Directory — Site launching soon.</p>
-      </div>
-    </div>
+    <!-- replace menu-wrap with: -->
+<nav class="nav-bar">
+  <div class="nav-logo">VLearn</div>
+  <ul class="nav-links">
+    <li><a href="#">Home</a></li>
+    <li class="dropdown">
+      <a href="#">Subjects ▾</a>
+      <ul class="dropdown-content">
+        <li><a href="hindi.html">Hindi</a></li>
+        <li><a href="#" class="locked">English</a></li>
+        <li><a href="#" class="locked">Maths</a></li>
+        <li><a href="#" class="locked">Science</a></li>
+        <li><a href="#" class="locked">SST</a></li>
+      </ul>
+    </li>
+    <li><a href="practice.html">Practice Sheet</a></li>
+    <li><a href="answers.html">Answer Key</a></li>
+    <li><a href="copyright.html">Copyright</a></li>
+    <li><a href="about.html">About Us</a></li>
+    <li><a href="credits.html">Credit</a></li>
+  </ul>
+</nav>
   </section>
 </div>
 
@@ -346,8 +361,16 @@
   document.addEventListener('keydown', e=> { if(e.key==='Escape') themePanel.style.display='none'; });
   window.addEventListener('beforeunload', ()=> stopStars());
 })();
+  // lock the other subjects
+document.querySelectorAll('.locked').forEach(el=>{
+  el.addEventListener('click', e=>{
+    e.preventDefault();
+    alert("LOCKED FOR NOW\nCOMING SOON");
+  });
+});
 </script>
 </body>
 </html>
+
 
 
