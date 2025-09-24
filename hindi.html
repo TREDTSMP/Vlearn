@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>VLearn — हिंदी साहित्य - ब</title>
+<link rel="icon" type="image/png" href="Logo.png">
+<style>
+  /* Keep the same variables & styles so theme JS can reuse them */
+  :root{ --bg:#ffffff; --fg:#001d3d; --nav-bg:rgba(255,255,255,0.95); --nav-fg:#001d3d; }
+  html,body{ height:100%; margin:0; padding:0; }
+  body{ font-family: "Noto Sans", "Merriweather", system-ui, sans-serif; background:var(--bg); color:var(--fg); -webkit-font-smoothing:antialiased; }
+
+  /* star canvas behind */
+  #spaceCanvas{ position:fixed; inset:0; z-index:0; }
+
+  /* top nav (same style) */
+  .navbar{ display:flex; align-items:center; justify-content:flex-start; background:var(--nav-bg); color:var(--nav-fg); border-radius:28px; width:92%; max-width:1200px; margin:20px auto; padding:0; z-index:20; box-shadow:0 8px 24px rgba(0,0,0,0.08); }
+  .navbar a, .navbar button.dropbtn{ padding:14px 20px; font-weight:700; color:var(--nav-fg); text-decoration:none; background:transparent; border:0; cursor:pointer; }
+  .navbar a:hover, .navbar button.dropbtn:hover{ background:rgba(0,0,0,0.04); }
+
+  /* content card */
+  .card{ width:92%; max-width:1200px; margin:18px auto; background:rgba(255,255,255,0.92); border-radius:18px; padding:20px; z-index:15; box-shadow:0 8px 22px rgba(0,0,0,0.06); }
+
+  /* header */
+  .title { font-family: "Merriweather", serif; font-size:48px; text-align:center; margin-bottom:12px; }
+  .subtitle { font-size:34px; text-align:center; margin-bottom:18px; }
+
+  /* three columns */
+  .columns{ display:flex; gap:18px; }
+  .col{ flex:1; padding:12px; font-size:18px; line-height:1.9; color:var(--nav-fg); }
+  .col h3{ font-size:20px; margin-bottom:10px; text-align:center; }
+  .col ul{ padding-left:18px; margin:0; }
+
+  /* links style */
+  a.chapter-link{ color:var(--nav-fg); text-decoration:none; font-weight:700; }
+  a.chapter-link:hover{ text-decoration:underline; }
+
+  @media (max-width:920px){
+    .columns{ flex-direction:column; }
+    .title{ font-size:32px; } .subtitle{ font-size:22px; }
+  }
+</style>
+</head>
+<body>
+<canvas id="spaceCanvas"></canvas>
+
+<!-- nav — simple link back to index -->
+<div class="navbar">
+  <a href="index.html">HOME</a>
+  <a href="#" style="margin-left:8px;">SUBJECTS</a>
+  <a href="#" style="margin-left:8px;">PRACTICE SHEET</a>
+  <div style="flex:1"></div>
+  <a href="#">About Us</a>
+</div>
+
+<div class="card">
+  <div class="title">VLEARN</div>
+  <div class="subtitle">हिंदी साहित्य - ब</div>
+
+  <div class="columns" role="main" aria-labelledby="content-title">
+    <!-- left -->
+    <div class="col" aria-label="Left column">
+      <h3>स्पर्श भाग - ब (पद्य खंड)</h3>
+      <ul>
+        <li>कबीर - साखी</li>
+        <li>मीरा - पद</li>
+        <li>मैथिलीशरण गुप्त - मनुष्यता</li>
+        <li>सुमित्रानंदन पंत - पर्वत प्रदेश में पावस</li>
+        <li>वीरेन डंगवाल - तोप</li>
+        <li>कैफ़ी आज़मी - कर चले हम फ़िदा</li>
+        <li>रवींद्रनाथ ठाकुर - आत्म्त्राण</li>
+      </ul>
+    </div>
+
+    <!-- center -->
+    <div class="col" aria-label="Center column">
+      <h3>स्पर्श भाग - ब (गद्य खंड)</h3>
+      <ul>
+        <li>प्रेमचंद - बड़े भाई साहब</li>
+        <li>सीताराम सेकसरिया - डायरी का एक पन्ना</li>
+        <li>लीलाधर मंडलोई - तताँरा-वामीरो कथा</li>
+        <li>प्रहलाद अग्रवाल - तीसरी कसम के शिल्पकार शैलेंद्र</li>
+        <li>निदा फ़ाज़ली - अब कहाँ दूसरे के दुख से दुखी होने वाले</li>
+        <li>रवींद्र केलेकर - पतझर में टूटी पत्तियाँ:
+          <ul style="list-style:circle;margin-left:14px;">
+            <li>(i) गिन्नी का सोना</li>
+            <li>(ii) झेन की देन</li>
+          </ul>
+        </li>
+        <li><a class="chapter-link" href="habib-kartus.html">हबीब तनवीर - कारतूस (एकांकी)</a></li>
+      </ul>
+    </div>
+
+    <!-- right -->
+    <div class="col" aria-label="Right column">
+      <h3>संचयन भाग- ब</h3>
+      <ul>
+        <li>मिथिलेश्वर - हरिहर काका</li>
+        <li>गुरदयाल सिंह - सपनों के-से दिन</li>
+        <li>टोपी शुक्ला - राही मासूम रज्जा</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Minimal starfield and theme apply like index.
+   To reuse the theme selection across pages we read localStorage key 'vlearn-theme'.
+   This starfield is simpler (non-moving small density for performance).
+*/
+(function(){
+  const canvas = document.getElementById('spaceCanvas');
+  canvas.width = innerWidth; canvas.height = innerHeight;
+  const ctx = canvas.getContext('2d');
+
+  function startStars(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const density = Math.max(300, Math.floor((canvas.width*canvas.height)/15000)); // change if you want more
+    for(let i=0;i<density;i++){
+      const x = Math.random()*canvas.width;
+      const y = Math.random()*canvas.height;
+      const r = Math.random()*1.6 + 0.3;
+      ctx.beginPath();
+      ctx.fillStyle = '#fff';
+      ctx.globalAlpha = Math.random()*0.8 + 0.2;
+      ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+  startStars();
+  window.addEventListener('resize', ()=>{ canvas.width = innerWidth; canvas.height = innerHeight; startStars(); });
+
+  // apply theme colors from localStorage (if present)
+  const theme = localStorage.getItem('vlearn-theme') || 'light';
+  // basic mapping (keeps it simple)
+  const M = {
+    light: {bg:'#ffffff', fg:'#001f3f', navBg:'rgba(255,255,255,0.95)'},
+    dark:  {bg:'#000', fg:'#bfefff', navBg:'rgba(0,0,0,0.85)'},
+    retro: {bg:'#001a33', fg:'#fff', navBg:'rgba(0,26,51,0.88)'},
+    radio: {bg:'#d6ff7a', fg:'#164a00', navBg:'rgba(230,255,170,0.95)'},
+    lava:  {bg:'#fff6e8', fg:'#6b0000', navBg:'rgba(255,230,170,0.95)'},
+    glitch:{bg:'#050406', fg:'#e6f7ff', navBg:'rgba(2,2,2,0.85)'},
+    sgs:   {bg:'#061235', fg:'#fff', navBg:'rgba(6,18,53,0.9)'}
+  };
+  const cfg = M[theme] || M.light;
+  document.body.style.background = cfg.bg;
+  document.body.style.color = cfg.fg;
+  document.querySelectorAll('.navbar').forEach(n=> n.style.background = cfg.navBg);
+})();
+</script>
+</body>
+</html>
