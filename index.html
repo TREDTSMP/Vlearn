@@ -62,65 +62,62 @@
   .navbar {
     display:flex;
     align-items:center;
-    justify-content:flex-start;
+    justify-content:space-between; /* left/right groups */
     background:var(--nav-bg);
     color:var(--nav-fg);
     border-radius:28px;
-    overflow:hidden;
+    overflow: visible;              /* allow dropdowns to show */
     width:92%;
     max-width:1200px;
-    padding:0;
+    padding:8px 12px;
     margin:10px auto;
-    z-index:30;
+    z-index:120; /* above canvas */
     box-shadow: 0 8px 24px rgba(0,0,0,0.12);
     position:relative;
   }
-  .navbar a, .navbar button.dropbtn {
-    display:block;
-    padding:18px 26px;
-    color:var(--nav-fg);
-    text-decoration:none;
-    font-weight:700;
-    background:transparent;
-    border:0;
-    cursor:pointer;
-    font-size:18px;
+
+  .nav-left, .nav-right { display:flex; align-items:center; gap:8px; }
+
+  .brand { font-weight:900; letter-spacing:0.6px; color:var(--nav-fg); text-decoration:none; padding:8px 12px; font-size:18px; }
+
+  .nav-links{ list-style:none; display:flex; gap:6px; margin:0; padding:0; align-items:center; }
+  .nav-links li{ position:relative; }
+  .nav-links a, .nav-links button.dropbtn {
+    color:var(--nav-fg); text-decoration:none; padding:10px 14px; border-radius:8px; background:transparent; border:0; font-weight:700; cursor:pointer;
   }
-  .navbar a:hover, .navbar button.dropbtn:hover{ background: rgba(0,0,0,0.04); }
+  .nav-links a:hover, .nav-links button.dropbtn:hover{ background: rgba(0,0,0,0.04); }
 
-  .nav-spacer{ flex:1; } /* push some items to right if needed */
-
-  /* Dropdown */
+  /* dropdown */
   .dropdown { position:relative; }
   .dropdown-content {
     display:none;
     position:absolute;
-    top:100%;
+    top:calc(100% + 8px);
     left:0;
     background:var(--dropdown-bg);
     min-width:180px;
     box-shadow:0 10px 28px rgba(0,0,0,0.15);
     border-radius:8px;
-    z-index:40;
+    z-index:9999;
     overflow:hidden;
   }
   .dropdown-content a {
-    padding:12px 14px; display:block; color:var(--nav-fg); text-decoration:none; font-weight:700;
-    white-space:nowrap;
+    padding:12px 14px; display:block; color:var(--nav-fg); text-decoration:none; font-weight:700; white-space:nowrap;
   }
   .dropdown-content a:hover{ background:rgba(0,0,0,0.04); }
-  .dropdown:hover .dropdown-content{ display:block; }
+  .dropdown:hover > .dropdown-content{ display:block; } /* hover for desktop */
 
   /* locked style */
   .locked{ opacity:0.45; cursor:pointer; }
 
   /* small responsive */
   @media (max-width:900px){
-    .navbar a, .navbar button.dropbtn { padding:12px 14px; font-size:16px; }
-    .dropdown-content { min-width:140px; }
+    .navbar{ flex-direction:column; gap:10px; align-items:stretch; padding:12px; }
+    .nav-right{ justify-content:flex-end; }
+    .nav-links a, .nav-links button.dropbtn { padding:10px 12px; font-size:15px; }
+    .dropdown-content { min-width:140px; left:8px; }
   }
 
-  /* themes: the page uses CSS variables above; JS will set them per theme */
   /* small helper: content area under nav (so page isn't empty) */
   .page-content-placeholder{ width:92%; max-width:1200px; margin:18px auto; background: rgba(255,255,255,0.02); min-height:320px; border-radius:12px; z-index:20; position:relative; padding:18px; color:var(--nav-fg); }
 
@@ -181,33 +178,41 @@
     <div id="glitchBg" class="glitch-bg" style="display:none;"></div>
     <canvas id="stars"></canvas>
 
-    <!-- NAV BAR (Image 2) -->
+    <!-- NAV BAR (grouped left & right) -->
     <nav class="navbar" role="navigation" aria-label="Main navigation">
-      <a href="index.html" class="brand">VLEARN</a>
+      <div class="nav-left">
+        <a href="index.html" class="brand">VLEARN</a>
 
-      <div class="dropdown">
-        <button class="dropbtn">SUBJECTS ▾</button>
-        <div class="dropdown-content" id="subjectsDrop">
-          <a href="hindi.html">Hindi</a>
-          <a href="#" class="locked">English</a>
-          <a href="#" class="locked">Maths</a>
-          <a href="#" class="locked">Science</a>
-          <a href="#" class="locked">SST</a>
-        </div>
+        <ul class="nav-links">
+          <li class="dropdown">
+            <button class="dropbtn">SUBJECTS ▾</button>
+            <ul class="dropdown-content" id="subjectsDrop">
+              <li><a href="hindi.html">Hindi</a></li>
+              <li><a href="#" class="locked">English</a></li>
+              <li><a href="#" class="locked">Maths</a></li>
+              <li><a href="#" class="locked">Science</a></li>
+              <li><a href="#" class="locked">SST</a></li>
+            </ul>
+          </li>
+
+          <li><a href="#" >PRACTICE SHEET</a></li>
+          <li><a href="#" >ANSWER KEY</a></li>
+        </ul>
       </div>
 
-      <a href="#" style="margin-left:8px;">PRACTICE SHEET</a>
-      <a href="#" >ANSWER KEY</a>
-      <div class="nav-spacer"></div>
-      <a href="#" >Copyright(c)</a>
-      <a href="#" >About Us</a>
-      <a href="#" >Credit</a>
+      <div class="nav-right">
+        <ul class="nav-links">
+          <li><a href="#" >Copyright(c)</a></li>
+          <li><a href="#" >About Us</a></li>
+          <li><a href="#" >Credit</a></li>
+        </ul>
+      </div>
     </nav>
 
     <!-- page placeholder below nav -->
     <div class="page-content-placeholder" id="pageContent">
       <!-- You can load content dynamically or navigate to other pages -->
-      <h2 style="font-size:22px; margin-bottom:10px;">VLearn Directory</h2>
+      <h2 style="font-size:22px; margin-bottom:10px; color:var(--nav-fg);">VLearn Directory</h2>
       <p style="color:var(--muted);">Choose a subject from the menu to continue. Locked items show a "Locked for now" message.</p>
     </div>
   </section>
@@ -434,6 +439,29 @@
   function showLocked(){ modalLocked.classList.add('show'); }
   modalClose.addEventListener('click', ()=> modalLocked.classList.remove('show') );
   document.querySelectorAll('.locked').forEach(l => l.addEventListener('click', (ev)=>{ ev.preventDefault(); showLocked(); }) );
+
+  /* ============ DROPDOWN CLICK/TAP SUPPORT (mobile friendly) ============ */
+  (function(){
+    // toggle dropdown on click (touch)
+    document.querySelectorAll('.dropdown .dropbtn').forEach(btn=>{
+      btn.addEventListener('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        const panel = btn.parentElement.querySelector('.dropdown-content');
+        if(!panel) return;
+        const isOpen = panel.style.display === 'block';
+        // close other dropdowns
+        document.querySelectorAll('.dropdown .dropdown-content').forEach(p => p.style.display = 'none');
+        panel.style.display = isOpen ? 'none' : 'block';
+      });
+    });
+
+    // hide when clicking outside
+    document.addEventListener('click', function(){ document.querySelectorAll('.dropdown .dropdown-content').forEach(p => p.style.display = 'none'); });
+
+    // close on ESC
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') document.querySelectorAll('.dropdown .dropdown-content').forEach(p => p.style.display = 'none'); });
+  })();
 
   /* ============ SEQUENCE: loading -> welcome -> rick -> space ============ */
   setupWelcome();
