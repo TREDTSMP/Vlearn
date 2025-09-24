@@ -88,7 +88,12 @@
             <li>(ii) झेन की देन</li>
           </ul>
         </li>
-        <li><a class="chapter-link" href="habib-kartus.html">हबीब तनवीर - कारतूस (एकांकी)</a></li>
+        <!-- Chapter link: clicking this will try a quick HEAD request, then redirect if found -->
+        <li>
+          <a id="habibLink" class="chapter-link" href="habib-kartus.html" aria-label="हबीब तनवीर - कारतूस (एकांकी)">
+            हबीब तनवीर - कारतूस (एकांकी)
+          </a>
+        </li>
       </ul>
     </div>
 
@@ -111,10 +116,9 @@
 */
 (function(){
   const canvas = document.getElementById('spaceCanvas');
-  canvas.width = innerWidth; canvas.height = innerHeight;
   const ctx = canvas.getContext('2d');
-
-  function startStars(){
+  function resizeCanvas(){ canvas.width = innerWidth; canvas.height = innerHeight; drawStars(); }
+  function drawStars(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     const density = Math.max(300, Math.floor((canvas.width*canvas.height)/15000)); // change if you want more
     for(let i=0;i<density;i++){
@@ -128,8 +132,8 @@
     }
     ctx.globalAlpha = 1;
   }
-  startStars();
-  window.addEventListener('resize', ()=>{ canvas.width = innerWidth; canvas.height = innerHeight; startStars(); });
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
 
   // apply theme colors from localStorage (if present)
   const theme = localStorage.getItem('vlearn-theme') || 'light';
@@ -147,6 +151,43 @@
   document.body.style.background = cfg.bg;
   document.body.style.color = cfg.fg;
   document.querySelectorAll('.navbar').forEach(n=> n.style.background = cfg.navBg);
+
+  /* ====== Chapter link behavior ======
+     - We attempt a quick HEAD request to check the file exists on the server.
+     - If it exists (status 200-299) we navigate to it.
+     - If not found, we show an alert so you can check file name / deploy.
+     - This helps on Netlify where a missing file would otherwise cause a 404 after navigation.
+     - If the server blocks HEAD, fallback to direct navigation.
+  */
+  const habibLink = document.getElementById('habibLink');
+  if(habibLink){
+    habibLink.addEventListener('click', function(ev){
+      ev.preventDefault();
+      const href = habibLink.getAttribute('href');
+      // quick sanity: must be a relative link
+      if(!href) return;
+      // try HEAD request (may be blocked in some environments)
+      fetch(href, { method: 'HEAD', cache: 'no-store' })
+        .then(resp => {
+          if(resp.ok){
+            // file exists — go there
+            window.location.href = href;
+          } else {
+            // not ok (404 etc.)
+            alert("फ़ाइल नहीं मिली (" + href + ").\nफ़ाइल नाम और पाथ ठीक से अपलोड/डिप्लॉय कीजिए (Netlify case-sensitive)।");
+            console.warn('HEAD returned status', resp.status, resp);
+          }
+        })
+        .catch(err => {
+          // If HEAD is blocked, fallback to direct navigation (or show message)
+          console.warn('HEAD failed, falling back to direct navigation or show error:', err);
+          // Optional: try a lightweight GET for 1 byte to detect existence — commented out
+          // fetch(href, {method:'GET', headers: {'Range':'bytes=0-0'}}).then(...)
+          // For simplicity, attempt to navigate directly:
+          window.location.href = href;
+        });
+    });
+  }
 })();
 </script>
 </body>
