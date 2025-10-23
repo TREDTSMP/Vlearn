@@ -6,35 +6,70 @@
 <title>VLearn — हिंदी साहित्य - ब</title>
 <link rel="icon" type="image/png" href="Logo.png">
 <style>
-  /* Keep the same variables & styles so theme JS can reuse them */
-  :root{ --bg:#ffffff; --fg:#001d3d; --nav-bg:rgba(255,255,255,0.95); --nav-fg:#001d3d; }
+  :root{
+    --bg:#ffffff;
+    --fg:#001d3d;
+    --nav-bg:rgba(255,255,255,0.95);
+    --nav-fg:#001d3d;
+  }
   html,body{ height:100%; margin:0; padding:0; }
-  body{ font-family: "Noto Sans", "Merriweather", system-ui, sans-serif; background:var(--bg); color:var(--fg); -webkit-font-smoothing:antialiased; }
+  body{
+    font-family:"Noto Sans","Merriweather",system-ui,sans-serif;
+    background:var(--bg); color:var(--fg);
+    -webkit-font-smoothing:antialiased;
+  }
 
-  /* star canvas behind */
   #spaceCanvas{ position:fixed; inset:0; z-index:0; }
 
-  /* top nav (same style) */
-  .navbar{ display:flex; align-items:center; justify-content:flex-start; background:var(--nav-bg); color:var(--nav-fg); border-radius:28px; width:92%; max-width:1200px; margin:20px auto; padding:0; z-index:20; box-shadow:0 8px 24px rgba(0,0,0,0.08); }
-  .navbar a, .navbar button.dropbtn{ padding:14px 20px; font-weight:700; color:var(--nav-fg); text-decoration:none; background:transparent; border:0; cursor:pointer; }
-  .navbar a:hover, .navbar button.dropbtn:hover{ background:rgba(0,0,0,0.04); }
+  .navbar{
+    display:flex; align-items:center; justify-content:flex-start;
+    background:var(--nav-bg); color:var(--nav-fg);
+    border-radius:28px; width:92%; max-width:1200px;
+    margin:20px auto; padding:0; z-index:20;
+    box-shadow:0 8px 24px rgba(0,0,0,0.08);
+  }
+  .navbar a, .navbar button.dropbtn{
+    padding:14px 20px; font-weight:700; color:var(--nav-fg);
+    text-decoration:none; background:transparent; border:0; cursor:pointer;
+  }
+  .navbar a:hover, .navbar button.dropbtn:hover{
+    background:rgba(0,0,0,0.04);
+  }
 
-  /* content card */
-  .card{ width:92%; max-width:1200px; margin:18px auto; background:rgba(255,255,255,0.92); border-radius:18px; padding:20px; z-index:15; box-shadow:0 8px 22px rgba(0,0,0,0.06); }
+  .card{
+    width:92%; max-width:1200px; margin:18px auto;
+    background:rgba(255,255,255,0.92); border-radius:18px; padding:20px;
+    z-index:15; box-shadow:0 8px 22px rgba(0,0,0,0.06);
+  }
 
-  /* header */
-  .title { font-family: "Merriweather", serif; font-size:48px; text-align:center; margin-bottom:12px; }
-  .subtitle { font-size:34px; text-align:center; margin-bottom:18px; }
+  .title{ font-family:"Merriweather",serif; font-size:48px; text-align:center; margin-bottom:12px; }
+  .subtitle{ font-size:34px; text-align:center; margin-bottom:18px; }
 
-  /* three columns */
   .columns{ display:flex; gap:18px; }
   .col{ flex:1; padding:12px; font-size:18px; line-height:1.9; color:var(--nav-fg); }
   .col h3{ font-size:20px; margin-bottom:10px; text-align:center; }
   .col ul{ padding-left:18px; margin:0; }
 
-  /* links style */
-  a.chapter-link{ color:var(--nav-fg); text-decoration:none; font-weight:700; }
-  a.chapter-link:hover{ text-decoration:underline; }
+  /* buttons and links unified look */
+  button, a.buttonlike{
+    display:block;
+    width:100%;
+    text-align:left;
+    padding:10px 14px;
+    margin-bottom:6px;
+    border-radius:8px;
+    border:none;
+    background:rgba(0,0,0,0.04);
+    cursor:pointer;
+    font-size:16px;
+    font-weight:600;
+    color:var(--nav-fg);
+    text-decoration:none;
+    transition:background 0.2s ease;
+  }
+  button:hover, a.buttonlike:hover{
+    background:rgba(0,0,0,0.1);
+  }
 
   @media (max-width:920px){
     .columns{ flex-direction:column; }
@@ -45,7 +80,7 @@
 <body>
 <canvas id="spaceCanvas"></canvas>
 
-<!-- nav — simple link back to index -->
+<!-- Navbar -->
 <div class="navbar">
   <a href="index.html">HOME</a>
   <a href="#" style="margin-left:8px;">SUBJECTS</a>
@@ -59,7 +94,8 @@
   <div class="subtitle">हिंदी साहित्य - ब</div>
 
   <div class="columns" role="main" aria-labelledby="content-title">
-    <!-- left -->
+
+    <!-- Left -->
     <div class="col" aria-label="Left column">
       <h3>स्पर्श भाग - ब (पद्य खंड)</h3>
       <ul>
@@ -73,7 +109,7 @@
       </ul>
     </div>
 
-    <!-- center -->
+    <!-- Center -->
     <div class="col" aria-label="Center column">
       <h3>स्पर्श भाग - ब (गद्य खंड)</h3>
       <ul>
@@ -82,22 +118,20 @@
         <button>लीलाधर मंडलोई - तताँरा-वामीरो कथा</button>
         <button>प्रहलाद अग्रवाल - तीसरी कसम के शिल्पकार शैलेंद्र</button>
         <button>निदा फ़ाज़ली - अब कहाँ दूसरे के दुख से दुखी होने वाले</button>
-        <button>रवींद्र केलेकर - पतझर में टूटी पत्तियाँ:
-          <ul style="list-style:circle;margin-left:14px;">
-            <button>(i) गिन्नी का सोना</button>
-            <button>(ii) झेन की देन</button>
-          </ul>
-        </button>
-        <!-- Chapter link: clicking this will try a quick HEAD request, then redirect if found -->
-        <button>
-          <a id="habibLink" class="chapter-link" href="hindi/habib-kartus.html" aria-label="हबीब तनवीर - कारतूस (एकांकी)">
-            हबीब तनवीर - कारतूस (एकांकी)
-          </a>
-        </button>
+        <button>रवींद्र केलेकर - पतझर में टूटी पत्तियाँ:</button>
+        <ul style="list-style:circle;margin-left:14px;">
+          <button>(i) गिन्नी का सोना</button>
+          <button>(ii) झेन की देन</button>
+        </ul>
+
+        <!-- FIXED: Proper working link -->
+        <a id="habibLink" class="buttonlike" href="hindi/habib-kartus.html" aria-label="हबीब तनवीर - कारतूस (एकांकी)">
+          हबीब तनवीर - कारतूस (एकांकी)
+        </a>
       </ul>
     </div>
 
-    <!-- right -->
+    <!-- Right -->
     <div class="col" aria-label="Right column">
       <h3>संचयन भाग- ब</h3>
       <ul>
@@ -110,17 +144,14 @@
 </div>
 
 <script>
-/* Minimal starfield and theme apply like index.
-   To reuse the theme selection across pages we read localStorage key 'vlearn-theme'.
-   This starfield is simpler (non-moving small density for performance).
-*/
 (function(){
+  /* === Starfield === */
   const canvas = document.getElementById('spaceCanvas');
   const ctx = canvas.getContext('2d');
   function resizeCanvas(){ canvas.width = innerWidth; canvas.height = innerHeight; drawStars(); }
   function drawStars(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    const density = Math.max(300, Math.floor((canvas.width*canvas.height)/15000)); // change if you want more
+    const density = Math.max(300, Math.floor((canvas.width*canvas.height)/15000));
     for(let i=0;i<density;i++){
       const x = Math.random()*canvas.width;
       const y = Math.random()*canvas.height;
@@ -135,9 +166,8 @@
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
-  // apply theme colors from localStorage (if present)
+  /* === Theme === */
   const theme = localStorage.getItem('vlearn-theme') || 'light';
-  // basic mapping (keeps it simple)
   const M = {
     light: {bg:'#ffffff', fg:'#001f3f', navBg:'rgba(255,255,255,0.95)'},
     dark:  {bg:'#000', fg:'#bfefff', navBg:'rgba(0,0,0,0.85)'},
@@ -152,38 +182,24 @@
   document.body.style.color = cfg.fg;
   document.querySelectorAll('.navbar').forEach(n=> n.style.background = cfg.navBg);
 
-  /* ====== Chapter link behavior ======
-     - We attempt a quick HEAD request to check the file exists on the server.
-     - If it exists (status 200-299) we navigate to it.
-     - If not found, we show an alert so you can check file name / deploy.
-     - This helps on Netlify where a missing file would otherwise cause a 404 after navigation.
-     - If the server blocks HEAD, fallback to direct navigation.
-  */
+  /* === Link check for Habib === */
   const habibLink = document.getElementById('habibLink');
   if(habibLink){
     habibLink.addEventListener('click', function(ev){
       ev.preventDefault();
       const href = habibLink.getAttribute('href');
-      // quick sanity: must be a relative link
       if(!href) return;
-      // try HEAD request (may be blocked in some environments)
       fetch(href, { method: 'HEAD', cache: 'no-store' })
         .then(resp => {
           if(resp.ok){
-            // file exists — go there
             window.location.href = href;
           } else {
-            // not ok (404 etc.)
             alert("फ़ाइल नहीं मिली (" + href + ").\nफ़ाइल नाम और पाथ ठीक से अपलोड/डिप्लॉय कीजिए (Netlify case-sensitive)।");
             console.warn('HEAD returned status', resp.status, resp);
           }
         })
         .catch(err => {
-          // If HEAD is blocked, fallback to direct navigation (or show message)
-          console.warn('HEAD failed, falling back to direct navigation or show error:', err);
-          // Optional: try a lightweight GET for 1 byte to detect existence — commented out
-          // fetch(href, {method:'GET', headers: {'Range':'bytes=0-0'}}).then(...)
-          // For simplicity, attempt to navigate directly:
+          console.warn('HEAD failed, navigating directly:', err);
           window.location.href = href;
         });
     });
