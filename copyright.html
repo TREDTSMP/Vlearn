@@ -5,55 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Copyright & Attribution | TREDT Publications Society</title>
   <style>
-    :root {
-      --bg: #0d0d0d;
-      --fg: #f5f5f5;
-      --card-bg: rgba(255, 255, 255, 0.08);
-      --accent: #ffa500;
-      --nav-bg: rgba(0, 0, 0, 0.7);
-      --nav-fg: #ffffff;
-    }
-
     body {
-      background: var(--bg);
-      color: var(--fg);
       font-family: "Poppins", "Noto Sans", sans-serif;
       line-height: 1.6;
       margin: 0;
       padding: 0;
+      transition: background 0.3s, color 0.3s;
     }
 
     .navbar {
-      background: var(--nav-bg);
-      color: var(--nav-fg);
       padding: 0.8rem 1.5rem;
       font-weight: bold;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
       position: sticky;
       top: 0;
       z-index: 10;
+      transition: background 0.3s, color 0.3s;
     }
 
     .navbar a {
-      color: var(--nav-fg);
       text-decoration: none;
       font-weight: 500;
+      transition: color 0.3s;
     }
 
     .card {
-      background: var(--card-bg);
       border-radius: 18px;
       padding: 2rem;
       margin: 3rem auto;
       max-width: 900px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      transition: background 0.3s, color 0.3s;
     }
 
     h1, h2, h3 {
-      color: var(--accent);
       margin-bottom: 1rem;
     }
 
@@ -65,14 +53,14 @@
       text-align: center;
       padding: 1.5rem 1rem;
       font-size: 0.9rem;
-      color: #aaa;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
       margin-top: 2rem;
+      transition: color 0.3s;
     }
 
     a {
-      color: var(--accent);
       text-decoration: none;
+      transition: color 0.3s;
     }
 
     a:hover {
@@ -87,7 +75,6 @@
     }
   </style>
 </head>
-
 <body>
   <div class="navbar">
     <div>TREDT Publications Society</div>
@@ -140,5 +127,32 @@
   <footer>
     © 2025–2026 TREDT Publications Society (Regd.) — All Rights Reserved.
   </footer>
+
+  <script>
+    // Theme system
+    const theme = localStorage.getItem('vlearn-theme') || 'light';
+    const M = {
+      light: {bg:'#ffffff', fg:'#001f3f', navBg:'rgba(255,255,255,0.95)', accent:'#ffa500', cardBg:'rgba(0,0,0,0.05)'},
+      dark:  {bg:'#0d0d0d', fg:'#f5f5f5', navBg:'rgba(0,0,0,0.7)', accent:'#ffa500', cardBg:'rgba(255,255,255,0.08)'},
+      retro: {bg:'#001a33', fg:'#fff', navBg:'rgba(0,26,51,0.88)', accent:'#ffa500', cardBg:'rgba(255,255,255,0.08)'},
+      radio: {bg:'#d6ff7a', fg:'#164a00', navBg:'rgba(230,255,170,0.95)', accent:'#001f3f', cardBg:'rgba(0,0,0,0.05)'},
+      lava:  {bg:'#fff6e8', fg:'#6b0000', navBg:'rgba(255,230,170,0.95)', accent:'#001f3f', cardBg:'rgba(0,0,0,0.05)'},
+      glitch:{bg:'#050406', fg:'#e6f7ff', navBg:'rgba(2,2,2,0.85)', accent:'#ffa500', cardBg:'rgba(255,255,255,0.08)'},
+      sgs:   {bg:'#061235', fg:'#fff', navBg:'rgba(6,18,53,0.9)', accent:'#ffa500', cardBg:'rgba(255,255,255,0.08)'}
+    };
+    const cfg = M[theme] || M.light;
+
+    document.body.style.background = cfg.bg;
+    document.body.style.color = cfg.fg;
+
+    document.querySelectorAll('.navbar').forEach(n => n.style.background = cfg.navBg);
+    document.querySelectorAll('.navbar, .navbar a').forEach(n => n.style.color = cfg.fg);
+    document.querySelectorAll('.card').forEach(c => {
+      c.style.background = cfg.cardBg;
+      c.querySelectorAll('h1,h2,h3').forEach(h => h.style.color = cfg.accent);
+    });
+    document.querySelectorAll('a').forEach(a => a.style.color = cfg.accent);
+    document.querySelectorAll('footer').forEach(f => f.style.color = cfg.fg);
+  </script>
 </body>
 </html>
