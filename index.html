@@ -40,12 +40,25 @@
   .theme-panel button{ display:block; width:100%; padding:10px 12px; border:0; background:transparent; text-align:left; cursor:pointer; font-weight:700; border-radius:6px; margin:4px 0; color:var(--nav-fg); }
   .theme-panel button:hover{ background:rgba(0,0,0,0.04); }
 
-  /* ================= NEW INTRO ================= */
-  /* full-screen intro */
-  #intro { position:fixed; inset:0; width:100%; height:100vh; background:#0db24a; display:flex; align-items:center; justify-content:center; flex-direction:column; z-index:200; overflow:hidden; }
+  /* ================= INTRO (overlay) ================= */
+  /* Full-screen overlay that sits above everything until finished */
+  #intro {
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100vh;
+    background:#0db24a; /* green background */
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    z-index:9999; /* very high so it fully overlays the homepage */
+    overflow:hidden;
+    pointer-events:auto;
+  }
 
   /* center group containing Vs and welcome */
-  .center-content { z-index:210; text-align:center; pointer-events:none; }
+  .center-content { z-index:10000; text-align:center; pointer-events:none; }
   .v-wrapper { position:relative; width:min(680px,80vw); height:auto; display:flex; align-items:center; justify-content:center; }
   .bigV, .smallV {
     display:inline-block;
@@ -56,52 +69,85 @@
     transform-origin:center center;
     will-change: transform, opacity;
   }
-  .bigV { font-size:16vw; color:#000; transform:translateY(0); }
-  .smallV { font-size:7.8vw; color:#00ffff; position:absolute; left:50%; top:34%; transform:translate(-50%,-50%); }
+  .bigV { font-size:16vw; color:#000; }
+  .smallV { font-size:7.8vw; color:#00ffff; position:absolute; left:50%; top:40%; transform:translate(-50%,-50%); }
 
-  /* ensure Vs are perfectly center */
-  .center-content .welcome-text { margin-top:1.25rem; font-size:1.4rem; font-weight:700; color:#001f3f; opacity:0; transform:translateY(8px); transition:opacity .42s ease, transform .42s ease; }
-
+  .welcome-text { margin-top:1.25rem; font-size:1.4rem; font-weight:700; color:#001f3f; opacity:0; transform:translateY(8px); transition:opacity .42s ease, transform .42s ease; }
   .welcome-visible { opacity:1; transform:translateY(0); }
 
   /* entry animations */
   @keyframes bigRise { 0% { transform: translateY(120vh) scale(.95) rotate(-8deg); opacity:0 } 70% { transform: translateY(0) scale(1.03) rotate(-2deg); opacity:1 } 100% { transform: translateY(0) scale(1) rotate(0); opacity:1 } }
-  @keyframes smallDrop { 0% { transform: translateY(-120vh) scale(.8) rotate(8deg) } 70% { transform: translateY(6%) scale(1.06) rotate(2deg) } 100% { transform: translateY(0) scale(1) rotate(0); opacity:1 } }
+  @keyframes smallDrop { 0% { transform: translateY(-120vh) scale(.8) rotate(8deg); opacity:0 } 70% { transform: translateY(6%) scale(1.06) rotate(2deg); opacity:1 } 100% { transform: translateY(0) scale(1) rotate(0); opacity:1 } }
   @keyframes lockPulse { 0%{ transform: scale(1) } 50%{ transform: scale(1.06) } 100%{ transform: scale(1) } }
 
   /* random geometric shapes */
-  .shape { position:absolute; z-index:205; opacity:.55; transform-origin:center center; pointer-events:none; }
+  #shapesContainer { position:absolute; inset:0; z-index:9998; pointer-events:none; }
+  .shape { position:absolute; z-index:9998; opacity:.55; transform-origin:center center; pointer-events:none; }
   .shape.circle { border-radius:50%; background:rgba(255,255,255,0.18); }
   .shape.square { background:rgba(255,255,255,0.18); }
   .shape.triangle { width:0; height:0; border-left:28px solid transparent; border-right:28px solid transparent; border-bottom:48px solid rgba(255,255,255,0.18); }
 
-  /* ink splat overlay (multiple splats) */
-  .splat { position:absolute; background:#062d6f; border-radius:50%; opacity:0; transform:translate(-50%,-50%) scale(0); z-index:220; pointer-events:none; transition: transform 2s ease-in-out, opacity .7s ease; }
-  .splat.grow { opacity:1; transform:translate(-50%,-50%) scale(40); } /* large scale to cover */
+  /* ink splat overlay (grow to cover) */
+  .splat { position:absolute; background:#062d6f; border-radius:50%; opacity:0; transform:translate(-50%,-50%) scale(0); z-index:10001; pointer-events:none; transition: transform 2s ease-in-out, opacity .7s ease; }
+  .splat.grow { opacity:1; transform:translate(-50%,-50%) scale(40); } /* large so it covers screen */
   .splat.small-grow { transform:translate(-50%,-50%) scale(20); }
 
-  /* for accessibility */
   @media (prefers-reduced-motion: reduce) {
     .bigV, .smallV, .splat, .shape { animation: none !important; transition:none !important; opacity:1 !important; transform:none !important; }
     .welcome-text { opacity:1 !important; transform:none !important; }
   }
 
   /* --- RICKROLL --- */
-  #rick{ background:#000; z-index:250; }
+  #rick{ position:fixed; inset:0; z-index:9997; background:#000; display:flex; align-items:center; justify-content:center; }
   #rick video{ width:100%; height:100%; object-fit:cover; }
 
   /* --- SPACE / STARFIELD --- */
   #space{ position:relative; inset:0; width:100%; height:100%; background:#000; color:#fff; overflow:hidden; display:flex; align-items:flex-start; justify-content:center; padding-top:18px; z-index:10; }
   canvas#stars{ position:absolute; inset:0; width:100%; height:100%; z-index:10; display:block; }
 
-  /* keep rest of UI styles the same (navbar etc) */
-  .navbar { display:flex; align-items:center; justify-content:space-between; background:var(--nav-bg); color:var(--nav-fg); border-radius:28px; overflow: visible; width:92%; max-width:1200px; padding:8px 12px; margin:10px auto; z-index:120; box-shadow: 0 8px 24px rgba(0,0,0,0.12); position:relative; }
+  /* ============ NAV BAR (kept identical) ============ */
+  .navbar {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--nav-bg);
+    color:var(--nav-fg);
+    border-radius:28px;
+    overflow: visible;
+    width:92%;
+    max-width:1200px;
+    padding:8px 12px;
+    margin:10px auto;
+    z-index:120;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    position:relative;
+  }
   .nav-left, .nav-right { display:flex; align-items:center; gap:8px; }
   .brand { font-weight:900; letter-spacing:0.6px; color:var(--nav-fg); text-decoration:none; padding:8px 12px; font-size:18px; }
   .nav-links{ list-style:none; display:flex; gap:6px; margin:0; padding:0; align-items:center; }
-  .nav-links a, .nav-links button.dropbtn { color:var(--nav-fg); text-decoration:none; padding:10px 14px; border-radius:8px; background:transparent; border:0; font-weight:700; cursor:pointer; }
-  .dropdown-content { display:none; position:absolute; top:calc(100% + 8px); left:0; background:var(--dropdown-bg); min-width:180px; box-shadow:0 10px 28px rgba(0,0,0,0.15); border-radius:8px; z-index:9999; overflow:hidden; }
-  .modal { position:fixed; top:0; left:0; right:0; bottom:0; display:flex; align-items:center; justify-content:center; z-index:200; background: rgba(0,0,0,0.45); visibility:hidden; opacity:0; transition:opacity .18s ease; }
+  .nav-links li{ position:relative; }
+  .nav-links a, .nav-links button.dropbtn {
+    color:var(--nav-fg); text-decoration:none; padding:10px 14px; border-radius:8px; background:transparent; border:0; font-weight:700; cursor:pointer;
+  }
+  .nav-links a:hover, .nav-links button.dropbtn:hover{ background: rgba(0,0,0,0.04); }
+  .dropdown-content {
+    display:none;
+    position:absolute;
+    top:calc(100% + 8px);
+    left:0;
+    background:var(--dropdown-bg);
+    min-width:180px;
+    box-shadow:0 10px 28px rgba(0,0,0,0.15);
+    border-radius:8px;
+    z-index:9999;
+    overflow:hidden;
+  }
+
+  /* modal */
+  .modal {
+    position:fixed; top:0; left:0; right:0; bottom:0; display:flex; align-items:center; justify-content:center; z-index:200;
+    background: rgba(0,0,0,0.45); visibility:hidden; opacity:0; transition:opacity .18s ease;
+  }
   .modal.show{ visibility:visible; opacity:1; }
 
   h1,h2,h3,p{ margin:0; padding:0; }
@@ -122,7 +168,7 @@
     <button data-theme="sgs">SGS</button>
   </div>
 
-  <!-- Loading (unchanged) -->
+  <!-- Loading (unchanged, 4s) -->
   <section id="loading" class="screen" aria-hidden="false">
     <div class="loader-card" role="status">
       <div class="logo-title">VLearn</div>
@@ -132,8 +178,10 @@
     </div>
   </section>
 
-  <!-- Intro (new) - full screen -->
-  <section id="intro" class="screen hidden" aria-hidden="true" role="img" aria-label="VLearn intro animation">
+  <!-- Intro overlay: full-screen, sits above everything -->
+  <section id="intro" class="hidden" aria-hidden="true" role="img" aria-label="VLearn intro animation">
+    <div id="shapesContainer" aria-hidden="true"></div>
+
     <div class="center-content" aria-hidden="false">
       <div class="v-wrapper" id="vWrapper">
         <span class="bigV init" id="bigV">V</span>
@@ -142,30 +190,28 @@
       <div id="introText" class="welcome-text">Welcome to VLearn Web App</div>
     </div>
 
-    <!-- shapes container (JS will inject random shapes here) -->
-    <div id="shapesContainer" aria-hidden="true"></div>
-
-    <!-- splats (pre-create some splats) -->
+    <!-- ink splats pre-created -->
     <div class="splat" id="splat1" style="left:40%; top:30%; width:80px; height:80px;"></div>
-    <div class="splat" id="splat2" style="left:70%; top:50%; width:60px; height:60px;"></div>
-    <div class="splat" id="splat3" style="left:20%; top:65%; width:100px; height:100px;"></div>
-    <div class="splat" id="splat4" style="left:55%; top:75%; width:70px; height:70px;"></div>
+    <div class="splat" id="splat2" style="left:75%; top:45%; width:60px; height:60px;"></div>
+    <div class="splat" id="splat3" style="left:18%; top:68%; width:100px; height:100px;"></div>
+    <div class="splat" id="splat4" style="left:55%; top:78%; width:70px; height:70px;"></div>
   </section>
 
   <!-- Rickroll (1s) -->
-  <section id="rick" class="screen hidden" aria-hidden="true">
+  <section id="rick" class="hidden" aria-hidden="true">
     <video id="rickVideo" src="rickroll.mp4" playsinline preload="auto"></video>
   </section>
 
-  <!-- Space with starfield & nav bar (final stage) -->
+  <!-- Space with starfield & nav bar (final stage) - unchanged location so nav hidden until we show this -->
   <section id="space" class="screen hidden" aria-hidden="true">
     <div id="glitchBg" class="glitch-bg" style="display:none;"></div>
     <canvas id="stars"></canvas>
 
-    <!-- NAV BAR (grouped left & right) -->
+    <!-- NAV BAR -->
     <nav class="navbar" role="navigation" aria-label="Main navigation">
       <div class="nav-left">
         <a href="index.html" class="brand">VLEARN</a>
+
         <ul class="nav-links">
           <li class="dropdown">
             <button class="dropbtn">SUBJECTS ▾</button>
@@ -177,6 +223,7 @@
               <li><a href="#" class="locked">SST</a></li>
             </ul>
           </li>
+
           <li><a href="#" >PRACTICE SHEET</a></li>
           <li><a href="#" >ANSWER KEY</a></li>
         </ul>
@@ -191,7 +238,7 @@
       </div>
     </nav>
 
-    <!-- page placeholder below nav -->
+    <!-- page content -->
     <div class="page-content-placeholder" id="pageContent">
       <h2 style="font-size:22px; margin-bottom:10px; color:var(--nav-fg);">VLearn Directory</h2>
       <p style="color:var(--muted);">Choose a subject from the menu to continue. Locked items show a "Locked for now" message.</p>
@@ -224,21 +271,49 @@
   const shapesContainer = document.getElementById('shapesContainer');
   const splats = [ document.getElementById('splat1'), document.getElementById('splat2'), document.getElementById('splat3'), document.getElementById('splat4') ];
 
-  // theme UI (kept as before)
+  // theme panel
   const themeBtn = document.getElementById('themeBtn');
   const themePanel = document.getElementById('themePanel');
   themeBtn.addEventListener('click', (e)=>{ e.stopPropagation(); themePanel.style.display = themePanel.style.display === 'block' ? 'none' : 'block'; });
   document.addEventListener('click', (e)=>{ if(themePanel.style.display === 'block' && !themePanel.contains(e.target) && e.target !== themeBtn) themePanel.style.display='none'; });
 
-  // Minimal THEMES stub (detailed THEMES & starfield exists later in file; kept intact)
+  // THEMES (kept intact so the starfield and background react to it)
   const THEMES = {
-    dark: { '--bg':'#000000', '--fg':'#bfefff','--muted':'rgba(255,255,255,0.6)','--accent':'#6ee7ff', navBg:'rgba(0,0,0,0.76)', navFg:'#dff8ff', dropdown:'#111', spaceBg:'#000000', star:'#ffffff', starMoving:1, glitch:false },
-    light: { '--bg':'#ffffff', '--fg':'#003a66','--muted':'rgba(0,0,0,0.45)','--accent':'#0077cc', navBg:'rgba(255,255,255,0.95)', navFg:'#003a66', dropdown:'#fff', spaceBg:'#ffffff', star:'#001f3f', starMoving:1, glitch:false },
-    retro: { '--bg':'#001a33', '--fg':'#ffffff','--muted':'rgba(255,255,255,0.85)','--accent':'#66ffff', navBg:'rgba(0,26,51,0.92)', navFg:'#fff', dropdown:'#001a33', spaceBg:'#001a33', star:'#ffffff', starMoving:0.2, glitch:false },
-    radio: { '--bg':'#d6ff7a','--fg':'#2f7f00','--muted':'rgba(0,0,0,0.35)','--accent':'#6bd400', navBg:'rgba(230,255,170,0.95)', navFg:'#164a00', dropdown:'#eaffb8', spaceBg:'#d6ff7a', star:'#2f7f00', starMoving:1, glitch:false },
-    lava: { '--bg':'linear-gradient(180deg,#ffd84d,#ff7a00)','--fg':'#6b0000','--muted':'rgba(0,0,0,0.45)','--accent':'#ff6a00', navBg:'rgba(255,230,170,0.95)', navFg:'#6b0000', dropdown:'#ffe7b0', spaceBg:'#ffd84d', star:'#6b0000', starMoving:1, glitch:false },
-    glitch: { '--bg':'#050406','--fg':'#e6f7ff','--muted':'rgba(255,255,255,0.6)','--accent':'#00ffff', navBg:'rgba(2,2,2,0.85)', navFg:'#e6f7ff', dropdown:'#070707', spaceBg:'glitch', starNeg:['#ffffff','#00ffff','#000000','#ff0000'], starMoving:0, glitch:true },
-    sgs: { '--bg':'linear-gradient(180deg,#061235,#0b2b45)','--fg':'#ffffff','--muted':'rgba(255,255,255,0.85)','--accent':'#ffb86b', navBg:'rgba(6,18,53,0.9)', navFg:'#fff', dropdown:'#05213b', spaceBg:'#061235', star:'#ff8a3d', starMoving:1, glitch:false }
+    dark: {
+      '--bg':'#000000', '--fg':'#bfefff','--muted':'rgba(255,255,255,0.6)','--accent':'#6ee7ff',
+      navBg:'rgba(0,0,0,0.76)', navFg:'#dff8ff', dropdown:'#111',
+      spaceBg:'#000000', star:'#ffffff', starMoving:1, glitch:false
+    },
+    light: {
+      '--bg':'#ffffff', '--fg':'#003a66','--muted':'rgba(0,0,0,0.45)','--accent':'#0077cc',
+      navBg:'rgba(255,255,255,0.95)', navFg:'#003a66', dropdown:'#fff',
+      spaceBg:'#ffffff', star:'#001f3f', starMoving:1, glitch:false
+    },
+    retro: {
+      '--bg':'#001a33', '--fg':'#ffffff','--muted':'rgba(255,255,255,0.85)','--accent':'#66ffff',
+      navBg:'rgba(0,26,51,0.92)', navFg:'#fff', dropdown:'#001a33',
+      spaceBg:'#001a33', star:'#ffffff', starMoving:0.2, glitch:false
+    },
+    radio: {
+      '--bg':'#d6ff7a','--fg':'#2f7f00','--muted':'rgba(0,0,0,0.35)','--accent':'#6bd400',
+      navBg:'rgba(230,255,170,0.95)', navFg:'#164a00', dropdown:'#eaffb8',
+      spaceBg:'#d6ff7a', star:'#2f7f00', starMoving:1, glitch:false
+    },
+    lava: {
+      '--bg':'linear-gradient(180deg,#ffd84d,#ff7a00)','--fg':'#6b0000','--muted':'rgba(0,0,0,0.45)','--accent':'#ff6a00',
+      navBg:'rgba(255,230,170,0.95)', navFg:'#6b0000', dropdown:'#ffe7b0',
+      spaceBg:'#ffd84d', star:'#6b0000', starMoving:1, glitch:false
+    },
+    glitch: {
+      '--bg':'#050406','--fg':'#e6f7ff','--muted':'rgba(255,255,255,0.6)','--accent':'#00ffff',
+      navBg:'rgba(2,2,2,0.85)', navFg:'#e6f7ff', dropdown:'#070707',
+      spaceBg:'glitch', starNeg:['#ffffff','#00ffff','#000000','#ff0000'], starMoving:0, glitch:true
+    },
+    sgs: {
+      '--bg':'linear-gradient(180deg,#061235,#0b2b45)','--fg':'#ffffff','--muted':'rgba(255,255,255,0.85)','--accent':'#ffb86b',
+      navBg:'rgba(6,18,53,0.9)', navFg:'#fff', dropdown:'#05213b',
+      spaceBg:'#061235', star:'#ff8a3d', starMoving:1, glitch:false
+    }
   };
 
   function applyTheme(name){
@@ -251,17 +326,102 @@
     document.documentElement.style.setProperty('--dropdown-bg', cfg.dropdown || cfg.navBg);
     currentTheme = name;
     localStorage.setItem('vlearn-theme', name);
+    // if starfield already visible restart with new config
     if(!space.classList.contains('hidden')) restartStarfield();
-    document.getElementById('glitchBg') && (document.getElementById('glitchBg').style.display = cfg.glitch ? 'block' : 'none');
+    document.getElementById('glitchBg').style.display = cfg.glitch ? 'block' : 'none';
   }
+  document.querySelectorAll('.theme-panel button').forEach(b => b.addEventListener('click', ()=> applyTheme(b.getAttribute('data-theme')) ) );
   let currentTheme = localStorage.getItem('vlearn-theme') || 'light';
   applyTheme(currentTheme);
-  document.querySelectorAll('.theme-panel button').forEach(b => b.addEventListener('click', ()=> applyTheme(b.getAttribute('data-theme')) ) );
 
-  /* ============ STARFIELD (kept from original - unchanged logic) ============ */
+  /* ============ STARFIELD (copied intact and working) ============ */
   const STAR_DENSITY = 4000;
   let starAnimationStop = null;
-  function startStarfield(){ /* ... code omitted for brevity below (keeps your original starfield) */ }
+
+  function startStarfield(){
+    stopStarfield();
+    const cfg = THEMES[currentTheme] || THEMES.light;
+    const canvas = document.getElementById('stars');
+    if(!canvas) return;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // configure background
+    if(cfg.spaceBg === 'glitch'){ document.getElementById('glitchBg').style.display = 'block'; canvas.style.background = '#000'; }
+    else { document.getElementById('glitchBg').style.display = 'none'; canvas.style.background = cfg.spaceBg || cfg.spaceBg; canvas.style.background = cfg.spaceBg; }
+
+    // populate stars based on theme behavior
+    const stars = [];
+    if(cfg.glitch && Array.isArray(cfg.starNeg)){
+      for(let i=0;i<STAR_DENSITY;i++){
+        stars.push({ x:Math.random()*canvas.width, y:Math.random()*canvas.height, r:Math.random()*1.6+0.6, color: cfg.starNeg[Math.floor(Math.random()*cfg.starNeg.length)], delay: Math.random()*1400 });
+      }
+      let raf;
+      function loop(t){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        stars.forEach(s=>{
+          const v = Math.abs(Math.sin((t + s.delay)*0.004 + s.r));
+          if(v > 0.6){
+            ctx.fillStyle = s.color;
+            ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
+          }
+        });
+        raf = requestAnimationFrame(loop);
+      }
+      raf = requestAnimationFrame(loop);
+      starAnimationStop = ()=>{ cancelAnimationFrame(raf); ctx.clearRect(0,0,canvas.width,canvas.height); };
+    } else if(cfg.starMoving && cfg.starMoving < 1){
+      for(let i=0;i<STAR_DENSITY;i++){
+        stars.push({ x:Math.random()*canvas.width, y:Math.random()*canvas.height, r:Math.random()*1.6+0.3 });
+      }
+      const id = setInterval(()=>{
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        stars.forEach(s=>{
+          s.x += (Math.random()-0.5)*3;
+          s.y += (Math.random()-0.5)*3;
+          if(s.x < 0) s.x = canvas.width; if(s.x > canvas.width) s.x = 0;
+          if(s.y < 0) s.y = canvas.height; if(s.y > canvas.height) s.y = 0;
+          ctx.fillStyle = cfg.star || '#fff';
+          ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
+        });
+      }, 200);
+      starAnimationStop = ()=>{ clearInterval(id); ctx.clearRect(0,0,canvas.width,canvas.height); };
+    } else {
+      for(let i=0;i<STAR_DENSITY;i++){
+        stars.push({
+          x:Math.random()*canvas.width,
+          y:Math.random()*canvas.height,
+          r:Math.random()*1.6+0.2,
+          vx:(Math.random()*0.6-0.3)*(0.5+Math.random()*0.8),
+          vy:(Math.random()*0.6-0.3)*(0.5+Math.random()*0.8),
+          alpha: Math.random()*0.7+0.2,
+          color: cfg.star || '#fff'
+        });
+      }
+      let raf;
+      function loop(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        stars.forEach(s=>{
+          s.x += s.vx; s.y += s.vy;
+          if(s.x < 0) s.x = canvas.width; if(s.x > canvas.width) s.x = 0;
+          if(s.y < 0) s.y = canvas.height; if(s.y > canvas.height) s.y = 0;
+          ctx.globalAlpha = s.alpha;
+          ctx.fillStyle = s.color;
+          ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+        raf = requestAnimationFrame(loop);
+      }
+      raf = requestAnimationFrame(loop);
+      starAnimationStop = ()=>{ cancelAnimationFrame(raf); ctx.clearRect(0,0,canvas.width,canvas.height); };
+    }
+
+    // responsive
+    window.addEventListener('resize', ()=>{ canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+  }
+
   function stopStarfield(){ if(typeof starAnimationStop === 'function'){ try{ starAnimationStop(); }catch(e){} starAnimationStop = null; } }
   function restartStarfield(){ stopStarfield(); startStarfield(); }
 
@@ -288,140 +448,118 @@
     document.addEventListener('keydown', function(e){ if(e.key === 'Escape') document.querySelectorAll('.dropdown .dropdown-content').forEach(p => p.style.display = 'none'); });
   })();
 
-  /* ============ SEQUENCE: loading -> intro (7s) -> rick (1s) -> space ============ */
+  /* ============ SEQUENCE: loader -> intro (7s) -> rick (1s) -> space ============ */
   loading.classList.remove('hidden'); intro.classList.add('hidden'); rick.classList.add('hidden'); space.classList.add('hidden');
 
-  // show loader for 4s, then intro
+  // show loader (4s) then intro
   setTimeout(()=> {
     loading.classList.add('hidden');
     intro.classList.remove('hidden');
     runIntroSequence();
   }, 4000);
 
-  // goto rick then space: rickroll plays for 1 second, then show space + start starfield
   function gotoRickThenSpace(){
+    // hide intro overlay and show rick
     intro.classList.add('hidden');
     rick.classList.remove('hidden');
+
     (async ()=>{
       try{ await rickVideo.play(); } catch(e){ try{ rickVideo.muted=true; await rickVideo.play(); }catch(e){} }
     })();
+
+    // 1 second rickroll
     setTimeout(()=> {
-      try{ rickVideo.pause(); rickVideo.currentTime = 0; } catch(e){}
+      try{ rickVideo.pause(); rickVideo.currentTime = 0; }catch(e){}
       rick.classList.add('hidden');
       space.classList.remove('hidden');
       applyTheme(currentTheme);
-      // start the starfield (function defined later)
-      try{ startStarfield(); } catch(e){}
-    }, 1000); // 1 second Rickroll as requested
+      // start starfield after theme applied
+      startStarfield();
+    }, 1000);
   }
 
   /* ============ Intro animation timeline ============ */
   function runIntroSequence(){
-    // reset
-    bigV.classList.remove('animated'); smallV.classList.remove('animated');
-    bigV.style.animation = ''; smallV.style.animation = '';
+    // reset states
+    bigV.style.animation = '';
+    smallV.style.animation = '';
     introText.classList.remove('welcome-visible');
-    // shapes - create some random shapes
+    shapesContainer.innerHTML = '';
+    splats.forEach(s => { s.classList.remove('grow'); s.style.opacity = 0; });
+
+    // create random shapes (kept behind VS)
     createRandomShapes(10);
 
-    // play V animations
+    // timings
     const bigStart = 120;
     const bigDuration = 900;
     const smallStart = 260;
     const smallDuration = 900;
+    const lockDelay = Math.max(bigStart + bigDuration, smallStart + smallDuration) + 120;
+    const splatStart = 5000; // begin splats at 5s so they grow to cover at 7s
+
+    // animate Vs
     bigV.style.animation = `bigRise ${bigDuration}ms cubic-bezier(.2,.8,.2,1) ${bigStart}ms both`;
     smallV.style.animation = `smallDrop ${smallDuration}ms cubic-bezier(.2,.8,.2,1) ${smallStart}ms both`;
 
-    // after they land, quick lock pulse
-    const lockDelay = Math.max(bigStart + bigDuration, smallStart + smallDuration) + 120;
+    // brief lock pulse
     setTimeout(()=> {
-      // pulse
       const wrapper = document.getElementById('vWrapper');
       wrapper && wrapper.classList.add('merged');
       setTimeout(()=> wrapper && wrapper.classList.remove('merged'), 360);
     }, lockDelay);
 
-    // show welcome text shortly after lock
+    // reveal welcome text shortly after lock
     setTimeout(()=> introText.classList.add('welcome-visible'), lockDelay + 240);
 
-    // schedule splat growth: start at 5000ms (so splats grow 2s and finish at 7000ms)
-    const splatStart = 5000;
-    setTimeout(()=> {
+    // start splat growth at 5s; they will animate for 2s and fully cover by 7s
+    setTimeout(()=>{
       splats.forEach((s, idx) => {
-        // stagger slightly
         setTimeout(()=> {
           s.classList.add('grow');
         }, idx * 140);
       });
     }, splatStart);
 
-    // after 7s (intro total) go to rick
+    // after 7s total, go to rick (then to homepage)
     setTimeout(()=> {
       gotoRickThenSpace();
     }, 7000);
   }
 
-  // helper: create random shapes (triangle/circle/square) and place them
+  // helper: create random shapes (tri/circle/square)
   function createRandomShapes(count){
-    // clear existing
-    shapesContainer.innerHTML = '';
     const types = ['circle','square','triangle'];
     for(let i=0;i<count;i++){
       const el = document.createElement('div');
       const t = types[Math.floor(Math.random()*types.length)];
-      el.classList.add('shape', t);
-      // random sizes
-      const scale = 0.5 + Math.random()*2.2;
+      el.className = 'shape ' + t;
+      const scale = 0.6 + Math.random()*1.6;
       if(t === 'triangle'){
-        // triangle sizes handled by CSS borders
-        el.style.width = '0'; el.style.height = '0';
-        el.style.borderLeft = `${10*scale}px solid transparent`;
-        el.style.borderRight = `${10*scale}px solid transparent`;
-        el.style.borderBottom = `${20*scale}px solid rgba(255,255,255,0.18)`;
+        const base = 14 * scale;
+        el.style.borderLeft = `${base}px solid transparent`;
+        el.style.borderRight = `${base}px solid transparent`;
+        el.style.borderBottom = `${28 * scale}px solid rgba(255,255,255,0.18)`;
+        el.style.width = '0';
+        el.style.height = '0';
       } else {
-        const size = Math.round((20 + Math.random()*120) * scale);
+        const size = Math.round(18 + Math.random()*120) * (scale);
         el.style.width = `${size}px`;
         el.style.height = `${size}px`;
         if(t === 'circle') el.style.borderRadius = '50%';
       }
-      // random position across viewport, but keep some inside
-      const left = Math.random() * 100; // vw
-      const top = Math.random() * 100; // vh
-      el.style.left = `${left}vw`;
-      el.style.top = `${top}vh`;
-      // random rotation and slight animation
-      const rot = Math.floor(Math.random()*360);
-      el.style.transform = `rotate(${rot}deg) scale(${0.6 + Math.random()*1.0})`;
+      el.style.left = `${Math.random()*90 + 2}vw`;
+      el.style.top = `${Math.random()*82 + 6}vh`;
+      el.style.transform = `rotate(${Math.floor(Math.random()*360)}deg) scale(${0.7 + Math.random()*1.0})`;
       shapesContainer.appendChild(el);
     }
   }
 
-  // expose for dev
+  // startup: expose run function for dev
   window.runIntroSequence = runIntroSequence;
 
-  // minimal placeholder starfield functions (we kept earlier complex starfield implementation out of this snippet for readability)
-  // If you already have the full starfield code below, it will be used. Otherwise startStarfield is a harmless stub.
-  if(typeof startStarfield !== 'function'){
-    function startStarfield(){
-      const canvas = document.getElementById('stars');
-      if(!canvas) return;
-      const ctx = canvas.getContext && canvas.getContext('2d');
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      if(!ctx) return;
-      // simple subtle dots fallback
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      for(let i=0;i<300;i++){
-        ctx.fillStyle = 'rgba(255,255,255,0.05)';
-        ctx.beginPath();
-        ctx.arc(Math.random()*canvas.width, Math.random()*canvas.height, Math.random()*1.5+0.2, 0, Math.PI*2);
-        ctx.fill();
-      }
-    }
-  }
-
-  // clean up on unload
-  window.addEventListener('beforeunload', ()=> { try{ stopStarfield(); } catch(e){} });
+  // cleanup before unload
+  window.addEventListener('beforeunload', ()=> stopStarfield());
 
 })();
 </script>
