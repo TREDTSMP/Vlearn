@@ -602,14 +602,14 @@
   /* ============ SEQUENCE: loading -> intro -> rick -> space ============ */
   loading.classList.remove('hidden'); intro.classList.add('hidden'); rick.classList.add('hidden'); space.classList.add('hidden');
 
-  // After loader (4s) show intro
+  // After loader (6s) show intro
   setTimeout(()=> {
     loading.classList.add('hidden');
     intro.classList.remove('hidden');
 
     // run intro animation timeline via JS (so we can control exact sequencing)
     runIntroSequence();
-  }, 4000);
+  }, 6000);
 
   // play rickroll then show space (as before)
   function gotoRickThenSpace(){
@@ -625,7 +625,7 @@
       space.classList.remove('hidden');
       applyTheme(currentTheme);
       startStarfield();
-    }, 3000); // 3s for rick segment (unchanged)
+    }, 1000); // 3s for rick segment (unchanged)
   }
 
   /* ============ Intro animation timeline implementation ============ */
@@ -719,3 +719,4 @@
 </script>
 </body>
 </html>
+
