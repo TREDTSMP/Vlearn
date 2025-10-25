@@ -87,6 +87,11 @@
   .shape.square { background:rgba(255,255,255,0.18); }
   .shape.triangle { width:0; height:0; border-left:28px solid transparent; border-right:28px solid transparent; border-bottom:48px solid rgba(255,255,255,0.18); }
 
+   /* ink splat overlay (multiple splats) */
+  .splat { position:absolute; background:#062d6f; border-radius:50%; opacity:0; transform:translate(-50%,-50%) scale(0); z-index:220; pointer-events:none; transition: transform 2s ease-in-out, opacity .7s ease; }
+  .splat.grow { opacity:1; transform:translate(-50%,-50%) scale(40); } /* large scale to cover */
+  .splat.small-grow { transform:translate(-50%,-50%) scale(20); }
+
   /* ink splat overlay (grow to cover) */
   .splat { position:absolute; background:#062d6f; border-radius:50%; opacity:0; transform:translate(-50%,-50%) scale(0); z-index:10001; pointer-events:none; transition: transform 4s ease-in-out, opacity .9s ease; }
   .splat.grow { opacity:1; transform:translate(-50%,-50%) scale(40); } /* large so it covers screen */
@@ -571,3 +576,4 @@
 </script>
 </body>
 </html>
+
