@@ -24,7 +24,7 @@
   /* full app */
   .app{ height:100vh; width:100vw; position:relative; }
 
-  /* generic screen sections (loader/welcome/rick/space) */
+  /* generic screen sections (loader/intro/rick/space) */
   .screen{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center; z-index:5; }
   .hidden{ display:none !important; }
 
@@ -42,11 +42,161 @@
   .theme-panel button{ display:block; width:100%; padding:10px 12px; border:0; background:transparent; text-align:left; cursor:pointer; font-weight:700; border-radius:6px; margin:4px 0; color:var(--nav-fg); }
   .theme-panel button:hover{ background:rgba(0,0,0,0.04); }
 
-  /* --- WELCOME --- */
-  .welcome-wrap{ width:94%; max-width:1100px; padding:22px; border-radius:12px; background:rgba(255,255,255,0.86); backdrop-filter:blur(6px); box-shadow:0 18px 36px rgba(2,6,23,0.06); }
-  .welcome-lines{ font-family: "Merriweather", serif; font-size:40px; color:var(--fg); line-height:0.96; letter-spacing:0.2px; display:inline-block; }
-  .copyright{ position:fixed; bottom:18px; left:50%; transform:translateX(-50%); font-size:13px; color:var(--muted); z-index:70; }
-  .letter{ display:inline-block; opacity:0; transform:translate3d(0,0,0) rotate(0deg); transition: transform 850ms cubic-bezier(.2,.8,.2,1), opacity 450ms ease-in-out; will-change:transform,opacity; color:var(--fg); }
+  /* --- INTRO (new) --- */
+  #intro {
+    background: #0db24a; /* green background specified */
+    color: #000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    position:relative;
+    z-index:60;
+  }
+
+  .intro-stage {
+    width:92%;
+    max-width:960px;
+    height:360px;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:visible;
+  }
+
+  /* Big V (black) and small V (cyan) */
+  .big-V, .small-V {
+    font-family: "Merriweather", serif;
+    font-size: 220px;
+    line-height: 1;
+    font-weight: 900;
+    letter-spacing: -6px;
+    position:absolute;
+    user-select:none;
+    transform-origin:center center;
+    will-change: transform, opacity;
+  }
+  .big-V { color:#000; font-size:280px; } /* larger */
+  .small-V { color:#00ffff; font-size:120px; } /* cyan smaller */
+
+  /* initial offscreen positions and animation */
+  .big-V.init { transform: translateY(120vh) scale(0.9) rotate(-8deg); opacity:0; }
+  .small-V.init { transform: translateY(-120vh) scale(0.9) rotate(8deg); opacity:0; }
+
+  /* comeIntoCenter - both animate to center */
+  @keyframes bigRise {
+    0% { transform: translateY(120vh) scale(0.95) rotate(-8deg); opacity:0; }
+    70% { transform: translateY(0) scale(1.02) rotate(-2deg); opacity:1; }
+    100% { transform: translateY(0) scale(1) rotate(0deg); opacity:1; }
+  }
+  @keyframes smallDrop {
+    0% { transform: translateY(-120vh) scale(0.8) rotate(8deg); opacity:0; }
+    70% { transform: translateY(6%) scale(1.06) rotate(2deg); opacity:1; }
+    100% { transform: translateY(0) scale(1) rotate(0deg); opacity:1; }
+  }
+
+  /* subtle lock / pop when they merge */
+  @keyframes lockPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+    100% { transform: scale(1); }
+  }
+
+  .merged .big-V, .merged .small-V { animation: lockPulse 320ms ease 1; }
+
+  /* welcome text fades in */
+  .intro-text {
+    font-weight:700;
+    font-size:20px;
+    margin-top:18px;
+    opacity:0;
+    transform: translateY(8px);
+    transition: opacity 420ms ease, transform 420ms ease;
+    color: #001f3f;
+  }
+  .intro-text.visible { opacity:1; transform:translateY(0); }
+
+  /* pencil and fountain pen elements */
+  .pencil, .fountain {
+    position:absolute;
+    width:220px;
+    height:18px;
+    transform-origin: left center;
+    display:block;
+    opacity:0;
+    will-change: transform, opacity;
+  }
+
+  /* pencil graphic (simple rectangle + tip) - coming from right at 45deg */
+  .pencil {
+    right:-260px;
+    bottom:-80px;
+    transform: rotate(-45deg) translate3d(0,0,0);
+  }
+  .pencil .body { height:100%; width:100%; background: linear-gradient(90deg,#ffd54a,#ffb74d); border-radius:6px; display:block; }
+  .pencil .tip { position:absolute; right:-22px; top:-6px; width:0; height:0; border-left:22px solid #6b6b6b; border-top:12px solid transparent; border-bottom:12px solid transparent; }
+
+  @keyframes pencilIn {
+    0% { transform: translate3d(120px,120px,0) rotate(-45deg); opacity:0; }
+    60% { transform: translate3d(-20px,-20px,0) rotate(-45deg); opacity:1; }
+    100% { transform: translate3d(0,0,0) rotate(-45deg); opacity:1; }
+  }
+
+  /* fountain pen - coming from top-left to bottom-right (slash) */
+  .fountain {
+    left:-260px;
+    top:-120px;
+    width:260px;
+    height:18px;
+    transform: rotate(28deg);
+  }
+  .fountain .body { height:100%; width:100%; background: linear-gradient(90deg,#0a0a0a,#444); border-radius:6px; display:block; }
+  .fountain .nib { position:absolute; right:-16px; top:-4px; width:0; height:0; border-left:18px solid #0a0a0a; border-top:8px solid transparent; border-bottom:8px solid transparent; transform: rotate(20deg); }
+
+  @keyframes fountainIn {
+    0% { transform: translate3d(-160px,-160px,0) rotate(28deg); opacity:0; }
+    60% { transform: translate3d(20px,20px,0) rotate(28deg); opacity:1; }
+    100% { transform: translate3d(0,0,0) rotate(28deg); opacity:1; }
+  }
+
+  /* ink slash - drawn with pseudo element (animated scaleX) */
+  .ink-slash {
+    position:absolute;
+    width:2px;
+    height:0;
+    left:50%;
+    top:50%;
+    transform-origin: top left;
+    background: linear-gradient(180deg,#032a61,#0b3b85);
+    opacity:0;
+    border-radius:6px;
+  }
+  @keyframes slashGrow {
+    0% { height:0; opacity:0; transform: rotate(25deg) scaleY(0); }
+    60% { height:360px; opacity:1; transform: rotate(25deg) scaleY(1.06); }
+    100% { height:360px; opacity:1; transform: rotate(25deg) scaleY(1); }
+  }
+
+  /* ink pools / splatter */
+  .ink-pool {
+    position:absolute;
+    background:#062d6f;
+    width:8px; height:8px;
+    border-radius:50%;
+    opacity:0;
+    transform: scale(0.2);
+  }
+  @keyframes inkPop {
+    0% { opacity:0; transform: scale(0.2); }
+    60% { opacity:1; transform: scale(1.05); }
+    100% { opacity:1; transform: scale(1); }
+  }
+
+  /* small accessibility: reduce motion */
+  @media (prefers-reduced-motion: reduce) {
+    .big-V, .small-V, .pencil, .fountain, .ink-slash, .ink-pool { animation: none !important; transition:none !important; opacity:1 !important; transform:none !important; }
+  }
 
   /* --- RICKROLL --- */
   #rick{ background:#000; }
@@ -162,10 +312,36 @@
     </div>
   </section>
 
-  <!-- Welcome (4s) -->
-  <section id="welcome" class="screen hidden" aria-hidden="true">
-    <div class="welcome-wrap"><div id="welcomeLines" class="welcome-lines"></div></div>
-    <div class="copyright">©TREDT Publications Studios 2025 - 2026</div>
+  <!-- Intro (new) -->
+  <section id="intro" class="screen hidden" aria-hidden="true">
+    <div class="intro-stage" aria-hidden="false" role="img" aria-label="VLearn Intro animation">
+      <div id="vWrapper" style="position:relative; width:540px; height:260px; display:flex; align-items:center; justify-content:center;">
+        <div class="big-V init" id="bigV">V</div>
+        <div class="small-V init" id="smallV">V</div>
+
+        <!-- pencil -->
+        <div class="pencil" id="pencil" aria-hidden="true">
+          <span class="body"></span>
+          <span class="tip"></span>
+        </div>
+
+        <!-- fountain pen -->
+        <div class="fountain" id="fountain" aria-hidden="true">
+          <span class="body"></span>
+          <span class="nib"></span>
+        </div>
+
+        <!-- ink slash -->
+        <div class="ink-slash" id="slash" aria-hidden="true"></div>
+
+        <!-- ink pools (3 spots) -->
+        <div class="ink-pool" id="pool1" style="left:58%; top:62%; width:18px;height:18px;border-radius:50%;"></div>
+        <div class="ink-pool" id="pool2" style="left:64%; top:72%; width:28px;height:28px;border-radius:50%;"></div>
+        <div class="ink-pool" id="pool3" style="left:50%; top:78%; width:20px;height:20px;border-radius:50%;"></div>
+      </div>
+
+      <div class="intro-text" id="introText">Welcome to VLearn Web App</div>
+    </div>
   </section>
 
   <!-- Rickroll (3s) -->
@@ -233,7 +409,7 @@
   // elements
   const app = document.getElementById('app');
   const loading = document.getElementById('loading');
-  const welcome = document.getElementById('welcome');
+  const intro = document.getElementById('intro');
   const rick = document.getElementById('rick');
   const space = document.getElementById('space');
   const rickVideo = document.getElementById('rickVideo');
@@ -242,39 +418,19 @@
   const modalLocked = document.getElementById('modalLocked');
   const modalClose = document.getElementById('modalClose');
 
-  // welcome text
-  const welcomeText = "WELCOME TO THE\nVLEARN\nAN DIRECTORY FOR ALL CBSE CLASS X ANSWERS";
+  // elements for intro animation
+  const bigV = document.getElementById('bigV');
+  const smallV = document.getElementById('smallV');
+  const vWrapper = document.getElementById('vWrapper');
+  const introText = document.getElementById('introText');
+  const pencil = document.getElementById('pencil');
+  const fountain = document.getElementById('fountain');
+  const slash = document.getElementById('slash');
+  const pool1 = document.getElementById('pool1');
+  const pool2 = document.getElementById('pool2');
+  const pool3 = document.getElementById('pool3');
 
-  // per-letter welcome
-  function setupWelcome(){
-    const el = document.getElementById('welcomeLines');
-    el.innerHTML = '';
-    welcomeText.split('\n').forEach((ln, li) => {
-      const row = document.createElement('div');
-      row.style.display = 'block';
-      row.style.margin = (li===1 ? '6px 0 0 0' : '0');
-      for(let i=0;i<ln.length;i++){
-        const ch = ln[i] === ' ' ? '\u00A0' : ln[i];
-        const sp = document.createElement('span');
-        sp.className = 'letter';
-        sp.textContent = ch;
-        const rx = Math.floor(Math.random()*420)-210;
-        const ry = Math.floor(Math.random()*360)-180;
-        const rr = Math.floor(Math.random()*120)-60;
-        sp.style.transform = `translate3d(${rx}px, ${ry}px, 0) rotate(${rr}deg)`;
-        sp.style.opacity = '0';
-        sp.style.transitionDelay = `${Math.random()*650}ms`;
-        row.appendChild(sp);
-      }
-      el.appendChild(row);
-    });
-  }
-  function animateWelcomeIn(){
-    const letters = welcome.querySelectorAll('.letter');
-    letters.forEach((el, idx)=> setTimeout(()=>{ el.style.transform='translate3d(0,0,0) rotate(0deg)'; el.style.opacity='1'; }, 20*idx));
-  }
-
-  /* ============ THEME: config + persistence ============ */
+  // theme & starfield code unchanged from your original file (compressed for readability)
   const THEMES = {
     dark: {
       '--bg':'#000000', '--fg':'#bfefff','--muted':'rgba(255,255,255,0.6)','--accent':'#6ee7ff',
@@ -315,36 +471,27 @@
 
   function applyTheme(name){
     const cfg = THEMES[name] || THEMES.light;
-    // set CSS variables
     Object.keys(cfg).forEach(k=>{
       if(k.startsWith('--')) document.documentElement.style.setProperty(k, cfg[k]);
     });
-    // set nav / dropdown colors (these are not CSS vars to keep things simple)
     document.documentElement.style.setProperty('--nav-bg', cfg.navBg);
     document.documentElement.style.setProperty('--nav-fg', cfg.navFg);
     document.documentElement.style.setProperty('--dropdown-bg', cfg.dropdown || cfg.navBg);
-    // space background handled separately
     currentTheme = name;
     localStorage.setItem('vlearn-theme', name);
-    // if starfield active, restart with new theme settings
     if(!space.classList.contains('hidden')) restartStarfield();
-    // if glitch, show glitch overlay
     document.getElementById('glitchBg').style.display = cfg.glitch ? 'block' : 'none';
   }
 
-  // theme UI wiring
   themeBtn.addEventListener('click', (e)=>{ e.stopPropagation(); themePanel.style.display = themePanel.style.display === 'block' ? 'none' : 'block'; });
   document.addEventListener('click', (e)=>{ if(themePanel.style.display === 'block' && !themePanel.contains(e.target) && e.target !== themeBtn) themePanel.style.display='none'; });
   document.querySelectorAll('.theme-panel button').forEach(b => b.addEventListener('click', ()=> applyTheme(b.getAttribute('data-theme')) ) );
 
-  // persist and apply saved theme
   let currentTheme = localStorage.getItem('vlearn-theme') || 'light';
   applyTheme(currentTheme);
 
-  /* ============ STARFIELD ============ */
-  // Change density here if you want a lot more / fewer dots.
-  // WARNING: very high numbers (50k+) may be heavy on CPU on many devices.
-  const STAR_DENSITY = 4000; // default dots — set to 50000 for ~50k (may be slow)
+  /* ============ STARFIELD (same as original) ============ */
+  const STAR_DENSITY = 4000;
   let starAnimationStop = null;
 
   function startStarfield(){
@@ -356,14 +503,11 @@
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    // configure background
     if(cfg.spaceBg === 'glitch'){ document.getElementById('glitchBg').style.display = 'block'; canvas.style.background = '#000'; }
     else { document.getElementById('glitchBg').style.display = 'none'; canvas.style.background = cfg.spaceBg || cfg.spaceBg; canvas.style.background = cfg.spaceBg; }
 
-    // populate stars based on theme behavior
     const stars = [];
     if(cfg.glitch && Array.isArray(cfg.starNeg)){
-      // static dots that flicker (glitch)
       for(let i=0;i<STAR_DENSITY;i++){
         stars.push({ x:Math.random()*canvas.width, y:Math.random()*canvas.height, r:Math.random()*1.6+0.6, color: cfg.starNeg[Math.floor(Math.random()*cfg.starNeg.length)], delay: Math.random()*1400 });
       }
@@ -382,7 +526,6 @@
       raf = requestAnimationFrame(loop);
       starAnimationStop = ()=>{ cancelAnimationFrame(raf); ctx.clearRect(0,0,canvas.width,canvas.height); };
     } else if(cfg.starMoving && cfg.starMoving < 1){
-      // retro low-FPS-ish: use interval ~200ms (~5fps)
       for(let i=0;i<STAR_DENSITY;i++){
         stars.push({ x:Math.random()*canvas.width, y:Math.random()*canvas.height, r:Math.random()*1.6+0.3 });
       }
@@ -399,7 +542,6 @@
       }, 200);
       starAnimationStop = ()=>{ clearInterval(id); ctx.clearRect(0,0,canvas.width,canvas.height); };
     } else {
-      // smooth moving stars
       for(let i=0;i<STAR_DENSITY;i++){
         stars.push({
           x:Math.random()*canvas.width,
@@ -442,7 +584,6 @@
 
   /* ============ DROPDOWN CLICK/TAP SUPPORT (mobile friendly) ============ */
   (function(){
-    // toggle dropdown on click (touch)
     document.querySelectorAll('.dropdown .dropbtn').forEach(btn=>{
       btn.addEventListener('click', function(e){
         e.preventDefault();
@@ -450,56 +591,131 @@
         const panel = btn.parentElement.querySelector('.dropdown-content');
         if(!panel) return;
         const isOpen = panel.style.display === 'block';
-        // close other dropdowns
         document.querySelectorAll('.dropdown .dropdown-content').forEach(p => p.style.display = 'none');
         panel.style.display = isOpen ? 'none' : 'block';
       });
     });
-
-    // hide when clicking outside
     document.addEventListener('click', function(){ document.querySelectorAll('.dropdown .dropdown-content').forEach(p => p.style.display = 'none'); });
-
-    // close on ESC
     document.addEventListener('keydown', function(e){ if(e.key === 'Escape') document.querySelectorAll('.dropdown .dropdown-content').forEach(p => p.style.display = 'none'); });
   })();
 
-  /* ============ SEQUENCE: loading -> welcome -> rick -> space ============ */
-  setupWelcome();
-  loading.classList.remove('hidden'); welcome.classList.add('hidden'); rick.classList.add('hidden'); space.classList.add('hidden');
+  /* ============ SEQUENCE: loading -> intro -> rick -> space ============ */
+  loading.classList.remove('hidden'); intro.classList.add('hidden'); rick.classList.add('hidden'); space.classList.add('hidden');
 
-  // loader 4s
+  // After loader (4s) show intro
   setTimeout(()=> {
     loading.classList.add('hidden');
-    welcome.classList.remove('hidden');
-    setTimeout(()=> { animateWelcomeIn(); }, 80);
+    intro.classList.remove('hidden');
+
+    // run intro animation timeline via JS (so we can control exact sequencing)
+    runIntroSequence();
   }, 4000);
 
-  // welcome shows 4s then rickroll 3s
-  setTimeout(()=> {
-    welcome.classList.add('hidden');
+  // play rickroll then show space (as before)
+  function gotoRickThenSpace(){
+    intro.classList.add('hidden');
     rick.classList.remove('hidden');
-    (async ()=>{ try{ await rickVideo.play(); } catch(e){ try{ rickVideo.muted=true; await rickVideo.play(); }catch(e){}} })();
-  }, 8000);
+    (async ()=>{
+      try{ await rickVideo.play(); } catch(e){ try{ rickVideo.muted=true; await rickVideo.play(); }catch(e){} }
+    })();
 
-  // after rick (3s) show starfield + nav
-  setTimeout(()=> {
-    try{ rickVideo.pause(); rickVideo.currentTime = 0; } catch(e){}
-    rick.classList.add('hidden');
-    space.classList.remove('hidden');
+    setTimeout(()=> {
+      try{ rickVideo.pause(); rickVideo.currentTime = 0; } catch(e){}
+      rick.classList.add('hidden');
+      space.classList.remove('hidden');
+      applyTheme(currentTheme);
+      startStarfield();
+    }, 3000); // 3s for rick segment (unchanged)
+  }
 
-    // apply theme background + start starfield
-    applyTheme(currentTheme);
-    startStarfield();
-  }, 11000);
+  /* ============ Intro animation timeline implementation ============ */
+  function runIntroSequence(){
+    // Reset states
+    bigV.classList.remove('merged'); smallV.classList.remove('merged');
+    bigV.classList.add('init'); smallV.classList.add('init');
+    introText.classList.remove('visible');
+    pencil.style.opacity = 0; fountain.style.opacity = 0; slash.style.opacity = 0;
+    [pool1,pool2,pool3].forEach(p => { p.style.opacity = 0; p.style.transform = 'scale(0.2)'; });
 
-  // clean up
+    // small timing constants (ms)
+    const bigStart = 150;        // start after a short delay
+    const bigDuration = 900;     // rise duration
+    const smallStart = 280;      // small drops slightly later
+    const smallDuration = 900;
+    const lockDelay = Math.max(bigStart + bigDuration, smallStart + smallDuration) + 120; // after both landed
+    const textDelay = lockDelay + 240;
+    const pencilDelay = lockDelay + 380;
+    const fountainDelay = lockDelay + 520;
+    const slashDelay = fountainDelay + 520;
+    const inkDelay = slashDelay + 220;
+    const finishDelay = inkDelay + 900; // then go to rick
+
+    // animate big V: use CSS keyframes by setting inline animation
+    bigV.style.animation = `bigRise ${bigDuration}ms cubic-bezier(.2,.8,.2,1) ${bigStart}ms both`;
+    smallV.style.animation = `smallDrop ${smallDuration}ms cubic-bezier(.2,.8,.2,1) ${smallStart}ms both`;
+
+    // after they land, make merged pulse (toggle a class)
+    setTimeout(()=> {
+      bigV.classList.remove('init');
+      smallV.classList.remove('init');
+      // add merged class on wrapper to trigger lock pulse
+      vWrapper.classList.add('merged');
+      // remove after pulse
+      setTimeout(()=> vWrapper.classList.remove('merged'), 380);
+    }, lockDelay);
+
+    // show welcome text
+    setTimeout(()=> {
+      introText.classList.add('visible');
+    }, textDelay);
+
+    // pencil animation in from right at 45deg
+    setTimeout(()=> {
+      pencil.style.opacity = 1;
+      pencil.style.animation = `pencilIn 700ms cubic-bezier(.22,.9,.3,1) forwards`;
+    }, pencilDelay);
+
+    // fountain pen animation (top-left to bottom-right)
+    setTimeout(()=> {
+      fountain.style.opacity = 1;
+      fountain.style.animation = `fountainIn 700ms cubic-bezier(.22,.9,.3,1) forwards`;
+    }, fountainDelay);
+
+    // draw slash (grow)
+    setTimeout(()=> {
+      // position slash roughly along fountain pen path
+      slash.style.left = '46%';
+      slash.style.top = '42%';
+      slash.style.opacity = 1;
+      slash.style.animation = `slashGrow 420ms cubic-bezier(.2,.9,.2,1) forwards`;
+      // also darken smallV to show ink crossing (optional)
+      smallV.style.filter = 'brightness(0.95)';
+    }, slashDelay);
+
+    // ink pools pop
+    setTimeout(()=> {
+      const pops = [pool1,pool2,pool3];
+      pops.forEach((p, i) => {
+        setTimeout(()=> {
+          p.style.animation = `inkPop 360ms cubic-bezier(.2,.9,.2,1) forwards`;
+          p.style.opacity = 1;
+        }, i*120);
+      });
+    }, inkDelay);
+
+    // proceed to rick then homepage after finishDelay
+    setTimeout(()=> {
+      gotoRickThenSpace();
+    }, finishDelay);
+  }
+
+  // Expose runIntroSequence globally for quick testing (dev)
+  window.runIntroSequence = runIntroSequence;
+
+  // clean up starfield on unload
   window.addEventListener('beforeunload', ()=> stopStarfield());
 
 })();
 </script>
 </body>
 </html>
-
-
-
-
