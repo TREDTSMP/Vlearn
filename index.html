@@ -47,7 +47,7 @@
     inset:0;
     width:100%;
     height:100vh;
-    background:#0db24a; /* green background */
+    background:#0db24a; /* green background (kept from original); blue circles will appear on top */
     display:flex;
     align-items:center;
     justify-content:center;
@@ -87,27 +87,29 @@
   .shape.square { background:rgba(255,255,255,0.18); }
   .shape.triangle { width:0; height:0; border-left:28px solid transparent; border-right:28px solid transparent; border-bottom:48px solid rgba(255,255,255,0.18); }
 
-  /* ink splat overlay (multiple splats) - z-index set ABOVE center-content */
-  .splat {
-    position:absolute;
-    background:#062d6f;
-    border-radius:50%;
-    opacity:0;
-    transform:translate(-50%,-50%) scale(0);
-    z-index:10002;              /* IMPORTANT: above center-content (10000) */
-    pointer-events:none;
-    transition: transform 4s ease-in-out, opacity .9s ease;
+  /* === blue circles for intro overlay ===
+     These spawn dynamically via JS, grow to a computed scale and then are removed.
+  */
+  .intro-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(0, 119, 204, 0.9); /* strong blue */
+    width: 80px;
+    height: 80px;
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 3000ms cubic-bezier(.2,.8,.2,1), opacity 900ms ease;
+    pointer-events: none;
+    z-index:10002; /* above center-content (10000) */
     will-change: transform, opacity;
   }
-  .splat.grow { opacity:1; transform:translate(-50%,-50%) scale(40); } /* large scale to cover */
-  .splat.small-grow { transform:translate(-50%,-50%) scale(20); }
 
   @media (prefers-reduced-motion: reduce) {
-    .bigV, .smallV, .splat, .shape { animation: none !important; transition:none !important; opacity:1 !important; transform:none !important; }
+    .bigV, .smallV, .intro-circle, .shape { animation: none !important; transition:none !important; opacity:1 !important; transform:none !important; }
     .welcome-text { opacity:1 !important; transform:none !important; }
   }
 
-  /* --- RICKROLL --- */
+  /* --- RICKROLL --- (kept but unused in default flow) */
   #rick{ position:fixed; inset:0; z-index:9997; background:#000; display:flex; align-items:center; justify-content:center; }
   #rick video{ width:100%; height:100%; object-fit:cover; }
 
@@ -201,20 +203,15 @@
       </div>
       <div id="introText" class="welcome-text">Welcome to VLearn Web App</div>
     </div>
-
-    <!-- ink splats pre-created -->
-    <div class="splat" id="splat1" style="left:40%; top:30%; width:80px; height:80px;"></div>
-    <div class="splat" id="splat2" style="left:75%; top:45%; width:60px; height:60px;"></div>
-    <div class="splat" id="splat3" style="left:18%; top:68%; width:100px; height:100px;"></div>
-    <div class="splat" id="splat4" style="left:55%; top:78%; width:70px; height:70px;"></div>
+    <!-- NOTE: old splat elements removed. Blue circles spawn dynamically via JS -->
   </section>
 
-  <!-- Rickroll (1s) -->
+  <!-- Rickroll (kept but hidden) -->
   <section id="rick" class="hidden" aria-hidden="true">
     <video id="rickVideo" src="rickroll.mp4" playsinline preload="auto"></video>
   </section>
 
-  <!-- Space with starfield & nav bar (final stage) - unchanged location so nav hidden until we show this -->
+  <!-- Space with starfield & nav bar (final stage) -->
   <section id="space" class="screen hidden" aria-hidden="true">
     <div id="glitchBg" class="glitch-bg" style="display:none;"></div>
     <canvas id="stars"></canvas>
@@ -281,7 +278,6 @@
   const smallV = document.getElementById('smallV');
   const introText = document.getElementById('introText');
   const shapesContainer = document.getElementById('shapesContainer');
-  const splats = [ document.getElementById('splat1'), document.getElementById('splat2'), document.getElementById('splat3'), document.getElementById('splat4') ];
 
   // theme panel
   const themeBtn = document.getElementById('themeBtn');
@@ -456,7 +452,7 @@
     document.addEventListener('keydown', function(e){ if(e.key === 'Escape') document.querySelectorAll('.dropdown .dropdown-content').forEach(p => p.style.display = 'none'); });
   })();
 
-  /* ============ SEQUENCE: loader -> intro (7s) -> rick (1s) -> space ============ */
+  /* ============ SEQUENCE: loader -> intro -> circles -> space ============ */
   loading.classList.remove('hidden'); intro.classList.add('hidden'); rick.classList.add('hidden'); space.classList.add('hidden');
 
   // show loader (4s) then intro
@@ -466,46 +462,23 @@
     runIntroSequence();
   }, 4000);
 
-  function gotoRickThenSpace(){
-    // hide intro overlay and show rick
-    intro.classList.add('hidden');
-    rick.classList.remove('hidden');
-
-    (async ()=>{
-      try{ await rickVideo.play(); } catch(e){ try{ rickVideo.muted=true; await rickVideo.play(); }catch(e){} }
-    })();
-
-    // 1 second rickroll
-    setTimeout(()=> {
-      try{ rickVideo.pause(); rickVideo.currentTime = 0; }catch(e){}
-      rick.classList.add('hidden');
-      space.classList.remove('hidden');
-      applyTheme(currentTheme);
-      // start starfield after theme applied
-      startStarfield();
-    }, 1000);
-  }
-
-  /* ============ Intro animation timeline ============ */
+  /* ============ Intro animation timeline (with blue circles) ============ */
   function runIntroSequence(){
     // reset states
     bigV.style.animation = '';
     smallV.style.animation = '';
     introText.classList.remove('welcome-visible');
     shapesContainer.innerHTML = '';
-    splats.forEach(s => { s.classList.remove('grow'); s.style.opacity = 0; s.style.transform = 'translate(-50%,-50%) scale(0)'; });
 
     // create shapes
     createRandomShapes(10);
 
-    // timings
+    // timings for Vs
     const bigStart = 120;
     const bigDuration = 900;
     const smallStart = 260;
     const smallDuration = 900;
     const lockDelay = Math.max(bigStart + bigDuration, smallStart + smallDuration) + 120;
-    const splatStart = 3000; // START at 3s
-    const splatGrowDuration = 4000; // grows over 4s -> reaches full at 7s
 
     // animate Vs
     bigV.style.animation = `bigRise ${bigDuration}ms cubic-bezier(.2,.8,.2,1) ${bigStart}ms both`;
@@ -521,23 +494,77 @@
     // reveal welcome text shortly after lock
     setTimeout(()=> introText.classList.add('welcome-visible'), lockDelay + 240);
 
-    // start splat growth at 3s; they will animate for 4s and fully cover by 7s
-    setTimeout(()=>{
-      splats.forEach((s, idx) => {
-        // stagger a little
-        setTimeout(()=> {
-          // ensure transition duration is 4s (override if needed)
-          s.style.transition = `transform ${splatGrowDuration}ms ease-in-out, opacity ${Math.min(900, splatGrowDuration/3)}ms ease`;
-          // add grow class -> will scale transform from 0 to 40
-          requestAnimationFrame(()=> s.classList.add('grow'));
-        }, idx * 160);
-      });
-    }, splatStart);
+    // --- Blue circle sequence (starts after ~3s)
+    const circleStartDelay = 3000; // ms after intro shown
+    const circleCount = 10;
+    const growDuration = 3000; // how long each circle takes to expand
+    const stagger = 140; // ms between each circle start
 
-    // after 7s total, go to rick (then to homepage)
-    setTimeout(()=> {
-      gotoRickThenSpace();
-    }, 7000);
+    // Respect reduced-motion preference: if reduce, skip animated growth and go straight to homepage quickly
+    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    setTimeout(()=>{
+      if(reduceMotion){
+        // directly transition to homepage
+        intro.classList.add('hidden');
+        space.classList.remove('hidden');
+        applyTheme(currentTheme);
+        startStarfield();
+        return;
+      }
+
+      for(let i=0;i<circleCount;i++){
+        setTimeout(()=> {
+          // create circle
+          const c = document.createElement('div');
+          c.className = 'intro-circle';
+          const baseSize = 60 + Math.floor(Math.random()*120); // 60..180px
+          c.style.width = `${baseSize}px`;
+          c.style.height = `${baseSize}px`;
+          // random position in viewport
+          c.style.left = `${Math.random()*100}vw`;
+          c.style.top = `${Math.random()*100}vh`;
+          // append and compute an appropriate scale so the circle can cover the viewport from its center
+          intro.appendChild(c);
+
+          // compute a conservative required scale based on diagonal distance
+          const viewportDiagonal = Math.hypot(window.innerWidth, window.innerHeight);
+          // scale so the circle's diameter becomes at least viewportDiagonal * 1.2
+          const requiredScale = (viewportDiagonal * 1.2) / baseSize;
+
+          // ensure CSS transition duration matches growDuration
+          c.style.transition = `transform ${growDuration}ms cubic-bezier(.2,.8,.2,1), opacity 900ms ease`;
+
+          // force reflow then start growth
+          void c.offsetHeight;
+          c.style.transform = `translate(-50%,-50%) scale(${requiredScale})`;
+          c.style.opacity = '1';
+
+          // cleanup: remove circle after animation completes to keep DOM small
+          setTimeout(()=> {
+            try{ c.remove(); }catch(e){}
+          }, growDuration + 1200);
+        }, i * stagger);
+      }
+
+      // After the last circle finishes growing, fade out the intro and reveal the space/homepage
+      const lastStart = circleStartDelay + (circleCount - 1) * stagger;
+      const fadeDelay = lastStart + growDuration + 200; // small buffer
+
+      setTimeout(()=>{
+        intro.style.transition = 'opacity 900ms ease';
+        intro.style.opacity = '0';
+        setTimeout(()=> {
+          intro.classList.add('hidden');
+          intro.style.opacity = ''; // reset
+          space.classList.remove('hidden');
+          applyTheme(currentTheme);
+          startStarfield();
+        }, 900);
+      }, fadeDelay);
+
+    }, circleStartDelay);
+
   }
 
   // helper: create random shapes (tri/circle/square)
