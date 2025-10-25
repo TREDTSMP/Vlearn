@@ -88,7 +88,7 @@
   .shape.triangle { width:0; height:0; border-left:28px solid transparent; border-right:28px solid transparent; border-bottom:48px solid rgba(255,255,255,0.18); }
 
   /* ink splat overlay (grow to cover) */
-  .splat { position:absolute; background:#062d6f; border-radius:50%; opacity:0; transform:translate(-50%,-50%) scale(0); z-index:10001; pointer-events:none; transition: transform 2s ease-in-out, opacity .7s ease; }
+  .splat { position:absolute; background:#062d6f; border-radius:50%; opacity:0; transform:translate(-50%,-50%) scale(0); z-index:10001; pointer-events:none; transition: transform 4s ease-in-out, opacity .9s ease; }
   .splat.grow { opacity:1; transform:translate(-50%,-50%) scale(40); } /* large so it covers screen */
   .splat.small-grow { transform:translate(-50%,-50%) scale(20); }
 
@@ -105,8 +105,12 @@
   #space{ position:relative; inset:0; width:100%; height:100%; background:#000; color:#fff; overflow:hidden; display:flex; align-items:flex-start; justify-content:center; padding-top:18px; z-index:10; }
   canvas#stars{ position:absolute; inset:0; width:100%; height:100%; z-index:10; display:block; }
 
-  /* ============ NAV BAR (kept identical) ============ */
+  /* ============ NAV BAR - pinned to TOP (user requested) ============ */
   .navbar {
+    position:fixed;
+    top:12px;
+    left:50%;
+    transform:translateX(-50%);
     display:flex;
     align-items:center;
     justify-content:space-between;
@@ -117,10 +121,8 @@
     width:92%;
     max-width:1200px;
     padding:8px 12px;
-    margin:10px auto;
     z-index:120;
     box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-    position:relative;
   }
   .nav-left, .nav-right { display:flex; align-items:center; gap:8px; }
   .brand { font-weight:900; letter-spacing:0.6px; color:var(--nav-fg); text-decoration:none; padding:8px 12px; font-size:18px; }
@@ -239,7 +241,7 @@
     </nav>
 
     <!-- page content -->
-    <div class="page-content-placeholder" id="pageContent">
+    <div class="page-content-placeholder" id="pageContent" style="margin-top:86px;">
       <h2 style="font-size:22px; margin-bottom:10px; color:var(--nav-fg);">VLearn Directory</h2>
       <p style="color:var(--muted);">Choose a subject from the menu to continue. Locked items show a "Locked for now" message.</p>
     </div>
@@ -485,9 +487,9 @@
     smallV.style.animation = '';
     introText.classList.remove('welcome-visible');
     shapesContainer.innerHTML = '';
-    splats.forEach(s => { s.classList.remove('grow'); s.style.opacity = 0; });
+    splats.forEach(s => { s.classList.remove('grow'); s.style.opacity = 0; s.style.transform = 'translate(-50%,-50%) scale(0)'; });
 
-    // create random shapes (kept behind VS)
+    // create shapes
     createRandomShapes(10);
 
     // timings
@@ -496,7 +498,8 @@
     const smallStart = 260;
     const smallDuration = 900;
     const lockDelay = Math.max(bigStart + bigDuration, smallStart + smallDuration) + 120;
-    const splatStart = 5000; // begin splats at 5s so they grow to cover at 7s
+    const splatStart = 3000; // START at 3s
+    const splatGrowDuration = 4000; // grows over 4s -> reaches full at 7s
 
     // animate Vs
     bigV.style.animation = `bigRise ${bigDuration}ms cubic-bezier(.2,.8,.2,1) ${bigStart}ms both`;
@@ -512,12 +515,15 @@
     // reveal welcome text shortly after lock
     setTimeout(()=> introText.classList.add('welcome-visible'), lockDelay + 240);
 
-    // start splat growth at 5s; they will animate for 2s and fully cover by 7s
+    // start splat growth at 3s; they will animate for 4s and fully cover by 7s
     setTimeout(()=>{
       splats.forEach((s, idx) => {
+        // stagger a little
         setTimeout(()=> {
+          // ensure transition duration is 4s
+          s.style.transition = `transform ${splatGrowDuration}ms ease-in-out, opacity ${Math.min(900, splatGrowDuration/3)}ms ease`;
           s.classList.add('grow');
-        }, idx * 140);
+        }, idx * 160);
       });
     }, splatStart);
 
@@ -543,7 +549,7 @@
         el.style.width = '0';
         el.style.height = '0';
       } else {
-        const size = Math.round(18 + Math.random()*120) * (scale);
+        const size = Math.round((18 + Math.random()*120) * scale);
         el.style.width = `${size}px`;
         el.style.height = `${size}px`;
         if(t === 'circle') el.style.borderRadius = '50%';
