@@ -52,7 +52,7 @@
     align-items:center;
     justify-content:center;
     flex-direction:column;
-    z-index:9999; /* very high so it fully overlays the homepage */
+    z-index:9999; /* overlay */
     overflow:hidden;
     pointer-events:auto;
   }
@@ -87,14 +87,19 @@
   .shape.square { background:rgba(255,255,255,0.18); }
   .shape.triangle { width:0; height:0; border-left:28px solid transparent; border-right:28px solid transparent; border-bottom:48px solid rgba(255,255,255,0.18); }
 
-   /* ink splat overlay (multiple splats) */
-  .splat { position:absolute; background:#062d6f; border-radius:50%; opacity:0; transform:translate(-50%,-50%) scale(0); z-index:220; pointer-events:none; transition: transform 2s ease-in-out, opacity .7s ease; }
+  /* ink splat overlay (multiple splats) - z-index set ABOVE center-content */
+  .splat {
+    position:absolute;
+    background:#062d6f;
+    border-radius:50%;
+    opacity:0;
+    transform:translate(-50%,-50%) scale(0);
+    z-index:10002;              /* IMPORTANT: above center-content (10000) */
+    pointer-events:none;
+    transition: transform 4s ease-in-out, opacity .9s ease;
+    will-change: transform, opacity;
+  }
   .splat.grow { opacity:1; transform:translate(-50%,-50%) scale(40); } /* large scale to cover */
-  .splat.small-grow { transform:translate(-50%,-50%) scale(20); }
-
-  /* ink splat overlay (grow to cover) */
-  .splat { position:absolute; background:#062d6f; border-radius:50%; opacity:0; transform:translate(-50%,-50%) scale(0); z-index:10001; pointer-events:none; transition: transform 4s ease-in-out, opacity .9s ease; }
-  .splat.grow { opacity:1; transform:translate(-50%,-50%) scale(40); } /* large so it covers screen */
   .splat.small-grow { transform:translate(-50%,-50%) scale(20); }
 
   @media (prefers-reduced-motion: reduce) {
@@ -284,7 +289,7 @@
   themeBtn.addEventListener('click', (e)=>{ e.stopPropagation(); themePanel.style.display = themePanel.style.display === 'block' ? 'none' : 'block'; });
   document.addEventListener('click', (e)=>{ if(themePanel.style.display === 'block' && !themePanel.contains(e.target) && e.target !== themeBtn) themePanel.style.display='none'; });
 
-  // THEMES (kept intact so the starfield and background react to it)
+  // THEMES (kept intact)
   const THEMES = {
     dark: {
       '--bg':'#000000', '--fg':'#bfefff','--muted':'rgba(255,255,255,0.6)','--accent':'#6ee7ff',
@@ -333,7 +338,6 @@
     document.documentElement.style.setProperty('--dropdown-bg', cfg.dropdown || cfg.navBg);
     currentTheme = name;
     localStorage.setItem('vlearn-theme', name);
-    // if starfield already visible restart with new config
     if(!space.classList.contains('hidden')) restartStarfield();
     document.getElementById('glitchBg').style.display = cfg.glitch ? 'block' : 'none';
   }
@@ -341,7 +345,7 @@
   let currentTheme = localStorage.getItem('vlearn-theme') || 'light';
   applyTheme(currentTheme);
 
-  /* ============ STARFIELD (copied intact and working) ============ */
+  /* ============ STARFIELD (kept) ============ */
   const STAR_DENSITY = 4000;
   let starAnimationStop = null;
 
@@ -355,11 +359,9 @@
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    // configure background
     if(cfg.spaceBg === 'glitch'){ document.getElementById('glitchBg').style.display = 'block'; canvas.style.background = '#000'; }
     else { document.getElementById('glitchBg').style.display = 'none'; canvas.style.background = cfg.spaceBg || cfg.spaceBg; canvas.style.background = cfg.spaceBg; }
 
-    // populate stars based on theme behavior
     const stars = [];
     if(cfg.glitch && Array.isArray(cfg.starNeg)){
       for(let i=0;i<STAR_DENSITY;i++){
@@ -425,7 +427,6 @@
       starAnimationStop = ()=>{ cancelAnimationFrame(raf); ctx.clearRect(0,0,canvas.width,canvas.height); };
     }
 
-    // responsive
     window.addEventListener('resize', ()=>{ canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
   }
 
@@ -525,9 +526,10 @@
       splats.forEach((s, idx) => {
         // stagger a little
         setTimeout(()=> {
-          // ensure transition duration is 4s
+          // ensure transition duration is 4s (override if needed)
           s.style.transition = `transform ${splatGrowDuration}ms ease-in-out, opacity ${Math.min(900, splatGrowDuration/3)}ms ease`;
-          s.classList.add('grow');
+          // add grow class -> will scale transform from 0 to 40
+          requestAnimationFrame(()=> s.classList.add('grow'));
         }, idx * 160);
       });
     }, splatStart);
@@ -576,4 +578,3 @@
 </script>
 </body>
 </html>
-
