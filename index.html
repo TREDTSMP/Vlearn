@@ -41,17 +41,18 @@
   .theme-panel button:hover{ background:rgba(0,0,0,0.04); }
 
   /* ================= INTRO (overlay) ================= */
+  /* Full-screen overlay that sits above everything until finished */
   #intro {
     position:fixed;
     inset:0;
     width:100%;
     height:100vh;
-    background:#0db24a; /* green background */
+    background:#0db24a; /* green background (kept from original); blue circles will appear on top */
     display:flex;
     align-items:center;
     justify-content:center;
     flex-direction:column;
-    z-index:9999;
+    z-index:9999; /* overlay */
     overflow:hidden;
     pointer-events:auto;
   }
@@ -86,16 +87,29 @@
   .shape.square { background:rgba(255,255,255,0.18); }
   .shape.triangle { width:0; height:0; border-left:28px solid transparent; border-right:28px solid transparent; border-bottom:48px solid rgba(255,255,255,0.18); }
 
-  /* ink splat overlay (multiple splats) */
-  .splat { position:absolute; background:#062d6f; border-radius:50%; opacity:0; transform:translate(-50%,-50%) scale(0); z-index:10001; pointer-events:none; transition: transform 4s ease-in-out, opacity .9s ease; }
-  .splat.grow { opacity:1; transform:translate(-50%,-50%) scale(40); }
+  /* === blue circles for intro overlay ===
+     These spawn dynamically via JS, grow to a computed scale and then are removed.
+  */
+  .intro-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(0, 119, 204, 0.9); /* strong blue */
+    width: 80px;
+    height: 80px;
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 3000ms cubic-bezier(.2,.8,.2,1), opacity 900ms ease;
+    pointer-events: none;
+    z-index:10002; /* above center-content (10000) */
+    will-change: transform, opacity;
+  }
 
   @media (prefers-reduced-motion: reduce) {
-    .bigV, .smallV, .splat, .shape { animation: none !important; transition:none !important; opacity:1 !important; transform:none !important; }
+    .bigV, .smallV, .intro-circle, .shape { animation: none !important; transition:none !important; opacity:1 !important; transform:none !important; }
     .welcome-text { opacity:1 !important; transform:none !important; }
   }
 
-  /* --- RICKROLL --- */
+  /* --- RICKROLL --- (kept but unused in default flow) */
   #rick{ position:fixed; inset:0; z-index:9997; background:#000; display:flex; align-items:center; justify-content:center; }
   #rick video{ width:100%; height:100%; object-fit:cover; }
 
@@ -143,53 +157,6 @@
     overflow:hidden;
   }
 
-  /* page-content retro placeholder styling (used when retro is active) */
-  .retro-box {
-    width:100%;
-    height:380px; /* nice visible area; your existing layout adds margin-top so this will sit below the nav */
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:12px;
-    background:linear-gradient(180deg,#001833,#002a4d);
-    color:#fff;
-    box-shadow:0 8px 24px rgba(0,0,0,0.16);
-    font-family: "Courier New", monospace;
-    padding:18px;
-  }
-  .retro-inner {
-    width:100%;
-    max-width:760px;
-    text-align:center;
-  }
-  .retro-header {
-    text-align:left;
-    font-family: "Courier New", monospace;
-    color:#fff;
-    background:#001a33;
-    padding:12px;
-    border-radius:6px;
-    margin-bottom:12px;
-    text-align:left;
-    font-size:13px;
-    line-height:1.25;
-  }
-  .retro-btn {
-    display:inline-block;
-    margin-top:20px;
-    padding:12px 18px;
-    background:#002b66;
-    color:#fff;
-    border-radius:8px;
-    cursor:pointer;
-    text-decoration:none;
-    font-weight:800;
-    letter-spacing:0.6px;
-    border:2px solid rgba(255,255,255,0.06);
-    box-shadow: 0 6px 18px rgba(0,0,0,0.3);
-    font-family: "Courier New", monospace;
-  }
-
   /* modal */
   .modal {
     position:fixed; top:0; left:0; right:0; bottom:0; display:flex; align-items:center; justify-content:center; z-index:200;
@@ -215,7 +182,7 @@
     <button data-theme="sgs">SGS</button>
   </div>
 
-  <!-- Loading (4s) -->
+  <!-- Loading (unchanged, 4s) -->
   <section id="loading" class="screen" aria-hidden="false">
     <div class="loader-card" role="status">
       <div class="logo-title">VLearn</div>
@@ -225,7 +192,7 @@
     </div>
   </section>
 
-  <!-- Intro overlay -->
+  <!-- Intro overlay: full-screen, sits above everything -->
   <section id="intro" class="hidden" aria-hidden="true" role="img" aria-label="VLearn intro animation">
     <div id="shapesContainer" aria-hidden="true"></div>
 
@@ -236,20 +203,15 @@
       </div>
       <div id="introText" class="welcome-text">Welcome to VLearn Web App</div>
     </div>
-
-    <!-- ink splats pre-created -->
-    <div class="splat" id="splat1" style="left:40%; top:30%; width:80px; height:80px;"></div>
-    <div class="splat" id="splat2" style="left:75%; top:45%; width:60px; height:60px;"></div>
-    <div class="splat" id="splat3" style="left:18%; top:68%; width:100px; height:100px;"></div>
-    <div class="splat" id="splat4" style="left:55%; top:78%; width:70px; height:70px;"></div>
+    <!-- NOTE: old splat elements removed. Blue circles spawn dynamically via JS -->
   </section>
 
-  <!-- Rickroll (1s) -->
+  <!-- Rickroll (kept but hidden) -->
   <section id="rick" class="hidden" aria-hidden="true">
     <video id="rickVideo" src="rickroll.mp4" playsinline preload="auto"></video>
   </section>
 
-  <!-- Space with starfield & nav bar -->
+  <!-- Space with starfield & nav bar (final stage) -->
   <section id="space" class="screen hidden" aria-hidden="true">
     <div id="glitchBg" class="glitch-bg" style="display:none;"></div>
     <canvas id="stars"></canvas>
@@ -285,7 +247,7 @@
       </div>
     </nav>
 
-    <!-- page content that will host the retro button when Retro theme is active -->
+    <!-- page content -->
     <div class="page-content-placeholder" id="pageContent" style="margin-top:86px;">
       <h2 style="font-size:22px; margin-bottom:10px; color:var(--nav-fg);">VLearn Directory</h2>
       <p style="color:var(--muted);">Choose a subject from the menu to continue. Locked items show a "Locked for now" message.</p>
@@ -316,26 +278,52 @@
   const smallV = document.getElementById('smallV');
   const introText = document.getElementById('introText');
   const shapesContainer = document.getElementById('shapesContainer');
-  const splats = [ document.getElementById('splat1'), document.getElementById('splat2'), document.getElementById('splat3'), document.getElementById('splat4') ];
 
-  // theme UI
+  // theme panel
   const themeBtn = document.getElementById('themeBtn');
   const themePanel = document.getElementById('themePanel');
   themeBtn.addEventListener('click', (e)=>{ e.stopPropagation(); themePanel.style.display = themePanel.style.display === 'block' ? 'none' : 'block'; });
   document.addEventListener('click', (e)=>{ if(themePanel.style.display === 'block' && !themePanel.contains(e.target) && e.target !== themeBtn) themePanel.style.display='none'; });
 
-  // THEMES
+  // THEMES (kept intact)
   const THEMES = {
-    dark: { '--bg':'#000000', '--fg':'#bfefff','--muted':'rgba(255,255,255,0.6)','--accent':'#6ee7ff', navBg:'rgba(0,0,0,0.76)', navFg:'#dff8ff', dropdown:'#111', spaceBg:'#000000', star:'#ffffff', starMoving:1, glitch:false },
-    light: { '--bg':'#ffffff', '--fg':'#003a66','--muted':'rgba(0,0,0,0.45)','--accent':'#0077cc', navBg:'rgba(255,255,255,0.95)', navFg:'#003a66', dropdown:'#fff', spaceBg:'#ffffff', star:'#001f3f', starMoving:1, glitch:false },
-    retro: { '--bg':'#001a33', '--fg':'#ffffff','--muted':'rgba(255,255,255,0.85)','--accent':'#66ffff', navBg:'rgba(0,26,51,0.92)', navFg:'#fff', dropdown:'#001a33', spaceBg:'#001a33', star:'#ffffff', starMoving:0.2, glitch:false },
-    radio: { '--bg':'#d6ff7a','--fg':'#2f7f00','--muted':'rgba(0,0,0,0.35)','--accent':'#6bd400', navBg:'rgba(230,255,170,0.95)', navFg:'#164a00', dropdown:'#eaffb8', spaceBg:'#d6ff7a', star:'#2f7f00', starMoving:1, glitch:false },
-    lava: { '--bg':'linear-gradient(180deg,#ffd84d,#ff7a00)','--fg':'#6b0000','--muted':'rgba(0,0,0,0.45)','--accent':'#ff6a00', navBg:'rgba(255,230,170,0.95)', navFg:'#6b0000', dropdown:'#ffe7b0', spaceBg:'#ffd84d', star:'#6b0000', starMoving:1, glitch:false },
-    glitch: { '--bg':'#050406','--fg':'#e6f7ff','--muted':'rgba(255,255,255,0.6)','--accent':'#00ffff', navBg:'rgba(2,2,2,0.85)', navFg:'#e6f7ff', dropdown:'#070707', spaceBg:'glitch', starNeg:['#ffffff','#00ffff','#000000','#ff0000'], starMoving:0, glitch:true },
-    sgs: { '--bg':'linear-gradient(180deg,#061235,#0b2b45)','--fg':'#ffffff','--muted':'rgba(255,255,255,0.85)','--accent':'#ffb86b', navBg:'rgba(6,18,53,0.9)', navFg:'#fff', dropdown:'#05213b', spaceBg:'#061235', star:'#ff8a3d', starMoving:1, glitch:false }
+    dark: {
+      '--bg':'#000000', '--fg':'#bfefff','--muted':'rgba(255,255,255,0.6)','--accent':'#6ee7ff',
+      navBg:'rgba(0,0,0,0.76)', navFg:'#dff8ff', dropdown:'#111',
+      spaceBg:'#000000', star:'#ffffff', starMoving:1, glitch:false
+    },
+    light: {
+      '--bg':'#ffffff', '--fg':'#003a66','--muted':'rgba(0,0,0,0.45)','--accent':'#0077cc',
+      navBg:'rgba(255,255,255,0.95)', navFg:'#003a66', dropdown:'#fff',
+      spaceBg:'#ffffff', star:'#001f3f', starMoving:1, glitch:false
+    },
+    retro: {
+      '--bg':'#001a33', '--fg':'#ffffff','--muted':'rgba(255,255,255,0.85)','--accent':'#66ffff',
+      navBg:'rgba(0,26,51,0.92)', navFg:'#fff', dropdown:'#001a33',
+      spaceBg:'#001a33', star:'#ffffff', starMoving:0.2, glitch:false
+    },
+    radio: {
+      '--bg':'#d6ff7a','--fg':'#2f7f00','--muted':'rgba(0,0,0,0.35)','--accent':'#6bd400',
+      navBg:'rgba(230,255,170,0.95)', navFg:'#164a00', dropdown:'#eaffb8',
+      spaceBg:'#d6ff7a', star:'#2f7f00', starMoving:1, glitch:false
+    },
+    lava: {
+      '--bg':'linear-gradient(180deg,#ffd84d,#ff7a00)','--fg':'#6b0000','--muted':'rgba(0,0,0,0.45)','--accent':'#ff6a00',
+      navBg:'rgba(255,230,170,0.95)', navFg:'#6b0000', dropdown:'#ffe7b0',
+      spaceBg:'#ffd84d', star:'#6b0000', starMoving:1, glitch:false
+    },
+    glitch: {
+      '--bg':'#050406','--fg':'#e6f7ff','--muted':'rgba(255,255,255,0.6)','--accent':'#00ffff',
+      navBg:'rgba(2,2,2,0.85)', navFg:'#e6f7ff', dropdown:'#070707',
+      spaceBg:'glitch', starNeg:['#ffffff','#00ffff','#000000','#ff0000'], starMoving:0, glitch:true
+    },
+    sgs: {
+      '--bg':'linear-gradient(180deg,#061235,#0b2b45)','--fg':'#ffffff','--muted':'rgba(255,255,255,0.85)','--accent':'#ffb86b',
+      navBg:'rgba(6,18,53,0.9)', navFg:'#fff', dropdown:'#05213b',
+      spaceBg:'#061235', star:'#ff8a3d', starMoving:1, glitch:false
+    }
   };
 
-  // applyTheme with retro integration (saves/restores pageContent)
   function applyTheme(name){
     const cfg = THEMES[name] || THEMES.light;
     Object.keys(cfg).forEach(k=>{
@@ -348,26 +336,12 @@
     localStorage.setItem('vlearn-theme', name);
     if(!space.classList.contains('hidden')) restartStarfield();
     document.getElementById('glitchBg').style.display = cfg.glitch ? 'block' : 'none';
-
-    // retro integration: show centered "CONNECT TO INTERNET" button (navigates to retro-cmd.html)
-    const container = document.getElementById('pageContent');
-    if(!container) return;
-    if(name === 'retro') {
-      loadRetroBoxIntoContainer(container);
-    } else {
-      if(container.dataset && container.dataset.vlearnOrig !== undefined){
-        container.innerHTML = container.dataset.vlearnOrig;
-        delete container.dataset.vlearnOrig;
-      }
-    }
   }
-
   document.querySelectorAll('.theme-panel button').forEach(b => b.addEventListener('click', ()=> applyTheme(b.getAttribute('data-theme')) ) );
-
   let currentTheme = localStorage.getItem('vlearn-theme') || 'light';
   applyTheme(currentTheme);
 
-  /* ============ STARFIELD (original logic kept) ============ */
+  /* ============ STARFIELD (kept) ============ */
   const STAR_DENSITY = 4000;
   let starAnimationStop = null;
 
@@ -478,82 +452,119 @@
     document.addEventListener('keydown', function(e){ if(e.key === 'Escape') document.querySelectorAll('.dropdown .dropdown-content').forEach(p => p.style.display = 'none'); });
   })();
 
-  /* ============ SEQUENCE: loader -> intro (7s) -> rick (1s) -> space ============ */
+  /* ============ SEQUENCE: loader -> intro -> circles -> space ============ */
   loading.classList.remove('hidden'); intro.classList.add('hidden'); rick.classList.add('hidden'); space.classList.add('hidden');
 
-  // show loader for 4s then intro
+  // show loader (4s) then intro
   setTimeout(()=> {
     loading.classList.add('hidden');
     intro.classList.remove('hidden');
     runIntroSequence();
   }, 4000);
 
-  function gotoRickThenSpace(){
-    intro.classList.add('hidden');
-    rick.classList.remove('hidden');
-
-    (async ()=>{
-      try{ await rickVideo.play(); } catch(e){ try{ rickVideo.muted=true; await rickVideo.play(); }catch(e){} }
-    })();
-
-    setTimeout(()=> {
-      try{ rickVideo.pause(); rickVideo.currentTime = 0; } catch(e){}
-      rick.classList.add('hidden');
-      space.classList.remove('hidden');
-      applyTheme(currentTheme);
-      startStarfield();
-    }, 1000); // 1s rickroll
-  }
-
-  /* ============ Intro animation timeline ============ */
+  /* ============ Intro animation timeline (with blue circles) ============ */
   function runIntroSequence(){
     // reset states
     bigV.style.animation = '';
     smallV.style.animation = '';
     introText.classList.remove('welcome-visible');
     shapesContainer.innerHTML = '';
-    splats.forEach(s => { s.classList.remove('grow'); s.style.opacity = 0; s.style.transform = 'translate(-50%,-50%) scale(0)'; });
 
     // create shapes
     createRandomShapes(10);
 
-    // timings
+    // timings for Vs
     const bigStart = 120;
     const bigDuration = 900;
     const smallStart = 260;
     const smallDuration = 900;
     const lockDelay = Math.max(bigStart + bigDuration, smallStart + smallDuration) + 120;
-    const splatStart = 3000; // 3s
-    const splatGrowDuration = 4000; // 4s
 
     // animate Vs
     bigV.style.animation = `bigRise ${bigDuration}ms cubic-bezier(.2,.8,.2,1) ${bigStart}ms both`;
     smallV.style.animation = `smallDrop ${smallDuration}ms cubic-bezier(.2,.8,.2,1) ${smallStart}ms both`;
 
-    // lock pulse
+    // brief lock pulse
     setTimeout(()=> {
       const wrapper = document.getElementById('vWrapper');
       wrapper && wrapper.classList.add('merged');
       setTimeout(()=> wrapper && wrapper.classList.remove('merged'), 360);
     }, lockDelay);
 
-    // welcome text after lock
+    // reveal welcome text shortly after lock
     setTimeout(()=> introText.classList.add('welcome-visible'), lockDelay + 240);
 
-    // start splat growth at 3s; grow over 4s
-    setTimeout(()=>{
-      splats.forEach((s, idx) => {
-        setTimeout(()=> {
-          s.style.transition = `transform ${splatGrowDuration}ms ease-in-out, opacity ${Math.min(900, splatGrowDuration/3)}ms ease`;
-          s.classList.add('grow');
-        }, idx * 160);
-      });
-    }, splatStart);
+    // --- Blue circle sequence (starts after ~3s)
+    const circleStartDelay = 3000; // ms after intro shown
+    const circleCount = 10;
+    const growDuration = 3000; // how long each circle takes to expand
+    const stagger = 140; // ms between each circle start
 
-    // after 7s total (3+4) -> rickroll
-    setTimeout(()=> {
-      gotoRickThenSpace();
-    }, 7000);
+    // Respect reduced-motion preference: if reduce, skip animated growth and go straight to homepage quickly
+    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    setTimeout(()=>{
+      if(reduceMotion){
+        // directly transition to homepage
+        intro.classList.add('hidden');
+        space.classList.remove('hidden');
+        applyTheme(currentTheme);
+        startStarfield();
+        return;
+      }
+
+      for(let i=0;i<circleCount;i++){
+        setTimeout(()=> {
+          // create circle
+          const c = document.createElement('div');
+          c.className = 'intro-circle';
+          const baseSize = 60 + Math.floor(Math.random()*120); // 60..180px
+          c.style.width = `${baseSize}px`;
+          c.style.height = `${baseSize}px`;
+          // random position in viewport
+          c.style.left = `${Math.random()*100}vw`;
+          c.style.top = `${Math.random()*100}vh`;
+          // append and compute an appropriate scale so the circle can cover the viewport from its center
+          intro.appendChild(c);
+
+          // compute a conservative required scale based on diagonal distance
+          const viewportDiagonal = Math.hypot(window.innerWidth, window.innerHeight);
+          // scale so the circle's diameter becomes at least viewportDiagonal * 1.2
+          const requiredScale = (viewportDiagonal * 1.2) / baseSize;
+
+          // ensure CSS transition duration matches growDuration
+          c.style.transition = `transform ${growDuration}ms cubic-bezier(.2,.8,.2,1), opacity 900ms ease`;
+
+          // force reflow then start growth
+          void c.offsetHeight;
+          c.style.transform = `translate(-50%,-50%) scale(${requiredScale})`;
+          c.style.opacity = '1';
+
+          // cleanup: remove circle after animation completes to keep DOM small
+          setTimeout(()=> {
+            try{ c.remove(); }catch(e){}
+          }, growDuration + 1200);
+        }, i * stagger);
+      }
+
+      // After the last circle finishes growing, fade out the intro and reveal the space/homepage
+      const lastStart = circleStartDelay + (circleCount - 1) * stagger;
+      const fadeDelay = lastStart + growDuration + 200; // small buffer
+
+      setTimeout(()=>{
+        intro.style.transition = 'opacity 900ms ease';
+        intro.style.opacity = '0';
+        setTimeout(()=> {
+          intro.classList.add('hidden');
+          intro.style.opacity = ''; // reset
+          space.classList.remove('hidden');
+          applyTheme(currentTheme);
+          startStarfield();
+        }, 900);
+      }, fadeDelay);
+
+    }, circleStartDelay);
+
   }
 
   // helper: create random shapes (tri/circle/square)
@@ -584,67 +595,10 @@
     }
   }
 
-  // Expose for dev
+  // startup: expose run function for dev
   window.runIntroSequence = runIntroSequence;
 
-  // Retro loader: put centered "CONNECT TO INTERNET" button in #pageContent (no iframe)
-  function loadRetroBoxIntoContainer(containerElement) {
-    if(!containerElement) return;
-    // Save original HTML once
-    if(containerElement.dataset.vlearnOrig === undefined){
-      containerElement.dataset.vlearnOrig = containerElement.innerHTML;
-    }
-    // Build retro box markup (centered button)
-    containerElement.innerHTML = '';
-    const box = document.createElement('div');
-    box.className = 'retro-box';
-    const inner = document.createElement('div');
-    inner.className = 'retro-inner';
-
-    // header text top-left inside the box (white text on dark blue)
-    const header = document.createElement('div');
-    header.className = 'retro-header';
-    header.innerHTML = `Aryan Bhutta Software Co.<br/>Connected to Bhutan DNS Server<br/>ABSOS [Version 13.12.2009.9.03.2009]<br/>(c) ABS Co. All rights reserved.`;
-    inner.appendChild(header);
-
-    // centered search-like area and connect button
-    const centerText = document.createElement('div');
-    centerText.style.marginTop = '12px';
-    centerText.innerHTML = `<div style="font-family:'Courier New',monospace;font-size:20px; margin-bottom:10px; color:#fff;">ABS Search Engine</div>
-      <input id="retroSearchInput" type="text" placeholder="type search..." style="width:60%; max-width:420px; padding:8px; border-radius:6px; border:1px solid rgba(255,255,255,0.12); background:rgba(0,0,0,0.15); color:#fff; font-family:'Courier New',monospace;" />
-      <div style="margin-top:10px; color:#bfe6ff; font-family:'Courier New',monospace;">Welcome to the ABS, Good Luck Web Browsing</div>`;
-    inner.appendChild(centerText);
-
-    // connect button
-    const btn = document.createElement('a');
-    btn.className = 'retro-btn';
-    btn.href = 'retro-cmd.html';
-    btn.innerText = 'CONNECT TO INTERNET';
-    btn.setAttribute('role','button');
-    btn.style.display = 'inline-block';
-    // keep centered below
-    const btnWrap = document.createElement('div');
-    btnWrap.style.marginTop = '18px';
-    btnWrap.appendChild(btn);
-    inner.appendChild(btnWrap);
-
-    box.appendChild(inner);
-    containerElement.appendChild(box);
-
-    // if user types in input and presses Enter, also redirect to retro-cmd.html and preserve query in hash
-    const input = document.getElementById('retroSearchInput');
-    if(input){
-      input.addEventListener('keydown', function(e){
-        if(e.key === 'Enter'){
-          // optional: attach query as hash for retro-cmd.html to read if you want
-          const q = encodeURIComponent(this.value || '');
-          window.location.href = 'retro-cmd.html' + (q ? ('#q=' + q) : '');
-        }
-      });
-    }
-  }
-
-  // cleanup
+  // cleanup before unload
   window.addEventListener('beforeunload', ()=> stopStarfield());
 
 })();
