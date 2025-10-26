@@ -46,7 +46,7 @@
     inset:0;
     width:100%;
     height:100vh;
-    background:#0db24a; /* green background */
+    background:#0db24a;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -271,7 +271,7 @@
   const shapesContainer = document.getElementById('shapesContainer');
   const splats = [ document.getElementById('splat1'), document.getElementById('splat2'), document.getElementById('splat3'), document.getElementById('splat4') ];
 
-  // theme UI
+  // theme UI (kept as before)
   const themeBtn = document.getElementById('themeBtn');
   const themePanel = document.getElementById('themePanel');
   themeBtn.addEventListener('click', (e)=>{ e.stopPropagation(); themePanel.style.display = themePanel.style.display === 'block' ? 'none' : 'block'; });
@@ -288,7 +288,58 @@
     sgs: { '--bg':'linear-gradient(180deg,#061235,#0b2b45)','--fg':'#ffffff','--muted':'rgba(255,255,255,0.85)','--accent':'#ffb86b', navBg:'rgba(6,18,53,0.9)', navFg:'#fff', dropdown:'#05213b', spaceBg:'#061235', star:'#ff8a3d', starMoving:1, glitch:false }
   };
 
-  // applyTheme with retro integration (saves/restores pageContent)
+  /* ============ RETRO BOX LOADER (moved early & hardened) ============ */
+  function loadRetroBoxIntoContainer(containerElement) {
+    if(!containerElement) return;
+    try {
+      // Save original HTML once (store as dataset)
+      if(containerElement.dataset.vlearnOrig === undefined){
+        containerElement.dataset.vlearnOrig = containerElement.innerHTML;
+      }
+      // clear and insert iframe
+      containerElement.innerHTML = '';
+      const iframe = document.createElement('iframe');
+      // relative path; ensure retro-cmd.html is in same folder as index.html on the server
+      iframe.src = 'retro-cmd.html';
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.style.border = '0';
+      iframe.style.borderRadius = '12px';
+      iframe.setAttribute('title','ABS Retro CMD');
+      containerElement.appendChild(iframe);
+
+      // network/fail fallback: if iframe hasn't loaded after 2.5s, add small notice & log
+      let loaded = false;
+      const loadTimeout = setTimeout(()=> {
+        if(!loaded){
+          console.warn('retro iframe not signalled loaded yet (possible 404 or CSP).');
+          const note = document.createElement('div');
+          note.style.padding = '12px';
+          note.style.color = '#fff';
+          note.style.background = '#08162b';
+          note.style.borderRadius = '10px';
+          note.style.fontFamily = 'monospace';
+          note.innerText = 'Failed to load retro-cmd.html — check file is present in site root and deploy. See console/network.';
+          containerElement.appendChild(note);
+        }
+      }, 2500);
+
+      iframe.addEventListener('load', ()=> {
+        loaded = true;
+        clearTimeout(loadTimeout);
+        console.info('retro iframe loaded successfully:', iframe.src);
+      });
+      iframe.addEventListener('error', ()=> {
+        console.error('retro iframe error loading:', iframe.src);
+        clearTimeout(loadTimeout);
+      });
+
+    } catch(err){
+      console.error('loadRetroBoxIntoContainer error', err);
+    }
+  }
+
+  // apply theme (calls the loader for retro)
   function applyTheme(name){
     const cfg = THEMES[name] || THEMES.light;
     Object.keys(cfg).forEach(k=>{
@@ -306,8 +357,10 @@
     const container = document.getElementById('pageContent');
     if(!container) return;
     if(name === 'retro') {
+      console.log('applyTheme: retro -> loading retro box into #pageContent');
       loadRetroBoxIntoContainer(container);
     } else {
+      // restore original if saved
       if(container.dataset && container.dataset.vlearnOrig !== undefined){
         container.innerHTML = container.dataset.vlearnOrig;
         delete container.dataset.vlearnOrig;
@@ -315,16 +368,16 @@
     }
   }
 
+  /* ============ Hook theme panel buttons ============ */
   document.querySelectorAll('.theme-panel button').forEach(b => b.addEventListener('click', ()=> applyTheme(b.getAttribute('data-theme')) ) );
 
   let currentTheme = localStorage.getItem('vlearn-theme') || 'light';
   applyTheme(currentTheme);
 
-  /* ============ STARFIELD (original logic kept) ============ */
+  /* ============ STARFIELD (kept from original) ============ */
   const STAR_DENSITY = 4000;
   let starAnimationStop = null;
-
-  function startStarfield(){
+  function startStarfield(){ /* same as your working implementation - unchanged for brevity */ 
     stopStarfield();
     const cfg = THEMES[currentTheme] || THEMES.light;
     const canvas = document.getElementById('stars');
@@ -404,7 +457,6 @@
 
     window.addEventListener('resize', ()=>{ canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
   }
-
   function stopStarfield(){ if(typeof starAnimationStop === 'function'){ try{ starAnimationStop(); }catch(e){} starAnimationStop = null; } }
   function restartStarfield(){ stopStarfield(); startStarfield(); }
 
@@ -431,10 +483,10 @@
     document.addEventListener('keydown', function(e){ if(e.key === 'Escape') document.querySelectorAll('.dropdown .dropdown-content').forEach(p => p.style.display = 'none'); });
   })();
 
-  /* ============ SEQUENCE: loader -> intro -> rick -> space ============ */
+  /* ============ SEQUENCE: loading -> intro (7s) -> rick (1s) -> space ============ */
   loading.classList.remove('hidden'); intro.classList.add('hidden'); rick.classList.add('hidden'); space.classList.add('hidden');
 
-  // show loader for 4s then intro
+  // show loader for 4s, then intro
   setTimeout(()=> {
     loading.classList.add('hidden');
     intro.classList.remove('hidden');
@@ -444,139 +496,95 @@
   function gotoRickThenSpace(){
     intro.classList.add('hidden');
     rick.classList.remove('hidden');
-
-    (async ()=>{
-      try{ await rickVideo.play(); } catch(e){ try{ rickVideo.muted=true; await rickVideo.play(); }catch(e){} }
-    })();
-
+    (async ()=>{ try{ await rickVideo.play(); } catch(e){ try{ rickVideo.muted=true; await rickVideo.play(); }catch(e){} } })();
     setTimeout(()=> {
       try{ rickVideo.pause(); rickVideo.currentTime = 0; } catch(e){}
       rick.classList.add('hidden');
       space.classList.remove('hidden');
       applyTheme(currentTheme);
-      startStarfield();
-    }, 1000); // 1s rickroll
+      try{ startStarfield(); } catch(e){}
+    }, 1000);
   }
 
   /* ============ Intro animation timeline ============ */
   function runIntroSequence(){
-    // reset states
-    bigV.style.animation = '';
-    smallV.style.animation = '';
+    // reset
+    bigV.style.animation = ''; smallV.style.animation = '';
     introText.classList.remove('welcome-visible');
-    shapesContainer.innerHTML = '';
-    splats.forEach(s => { s.classList.remove('grow'); s.style.opacity = 0; s.style.transform = 'translate(-50%,-50%) scale(0)'; });
-
-    // create shapes
+    // shapes - create some random shapes
     createRandomShapes(10);
+    // reset splats
+    splats.forEach(s=>{ s.classList.remove('grow'); s.style.opacity = 0; s.style.transform = 'translate(-50%,-50%) scale(0)'; });
 
-    // timings
+    // play V animations
     const bigStart = 120;
     const bigDuration = 900;
     const smallStart = 260;
     const smallDuration = 900;
-    const lockDelay = Math.max(bigStart + bigDuration, smallStart + smallDuration) + 120;
-    const splatStart = 3000; // 3s
-    const splatGrowDuration = 4000; // 4s
-
-    // animate Vs
     bigV.style.animation = `bigRise ${bigDuration}ms cubic-bezier(.2,.8,.2,1) ${bigStart}ms both`;
     smallV.style.animation = `smallDrop ${smallDuration}ms cubic-bezier(.2,.8,.2,1) ${smallStart}ms both`;
 
-    // lock pulse
+    // after they land, quick lock pulse
+    const lockDelay = Math.max(bigStart + bigDuration, smallStart + smallDuration) + 120;
     setTimeout(()=> {
       const wrapper = document.getElementById('vWrapper');
       wrapper && wrapper.classList.add('merged');
       setTimeout(()=> wrapper && wrapper.classList.remove('merged'), 360);
     }, lockDelay);
 
-    // welcome text after lock
+    // show welcome text shortly after lock
     setTimeout(()=> introText.classList.add('welcome-visible'), lockDelay + 240);
 
-    // start splat growth at 3s; grow over 4s
-    setTimeout(()=>{
+    // schedule splat growth: start at 3000ms (so splats grow 4s and finish at 7000ms)
+    const splatStart = 3000;
+    const splatGrowDuration = 4000;
+    setTimeout(()=> {
       splats.forEach((s, idx) => {
         setTimeout(()=> {
           s.style.transition = `transform ${splatGrowDuration}ms ease-in-out, opacity ${Math.min(900, splatGrowDuration/3)}ms ease`;
           s.classList.add('grow');
-        }, idx * 160);
+        }, idx * 140);
       });
     }, splatStart);
 
-    // after 7s total (3+4) -> rickroll
+    // after 7s (intro total) go to rick
     setTimeout(()=> {
       gotoRickThenSpace();
     }, 7000);
   }
 
-  // helper: create random shapes (tri/circle/square)
+  // helper: create random shapes (triangle/circle/square) and place them
   function createRandomShapes(count){
+    shapesContainer.innerHTML = '';
     const types = ['circle','square','triangle'];
     for(let i=0;i<count;i++){
       const el = document.createElement('div');
       const t = types[Math.floor(Math.random()*types.length)];
-      el.className = 'shape ' + t;
-      const scale = 0.6 + Math.random()*1.6;
+      el.classList.add('shape', t);
+      const scale = 0.5 + Math.random()*2.2;
       if(t === 'triangle'){
-        const base = 14 * scale;
-        el.style.borderLeft = `${base}px solid transparent`;
-        el.style.borderRight = `${base}px solid transparent`;
-        el.style.borderBottom = `${28 * scale}px solid rgba(255,255,255,0.18)`;
-        el.style.width = '0';
-        el.style.height = '0';
+        el.style.width = '0'; el.style.height = '0';
+        el.style.borderLeft = `${10*scale}px solid transparent`;
+        el.style.borderRight = `${10*scale}px solid transparent`;
+        el.style.borderBottom = `${20*scale}px solid rgba(255,255,255,0.18)`;
       } else {
-        const size = Math.round((18 + Math.random()*120) * scale);
+        const size = Math.round((20 + Math.random()*120) * scale);
         el.style.width = `${size}px`;
         el.style.height = `${size}px`;
         if(t === 'circle') el.style.borderRadius = '50%';
       }
-      el.style.left = `${Math.random()*90 + 2}vw`;
-      el.style.top = `${Math.random()*82 + 6}vh`;
-      el.style.transform = `rotate(${Math.floor(Math.random()*360)}deg) scale(${0.7 + Math.random()*1.0})`;
+      el.style.left = `${Math.random() * 100}vw`;
+      el.style.top = `${Math.random() * 100}vh`;
+      el.style.transform = `rotate(${Math.floor(Math.random()*360)}deg) scale(${0.6 + Math.random()*1.0})`;
       shapesContainer.appendChild(el);
     }
   }
 
-  // Expose for dev
+  // expose for dev
   window.runIntroSequence = runIntroSequence;
 
-  // Retro iframe loader - improved: save original content and avoid duplicate listeners
-  function loadRetroBoxIntoContainer(containerElement) {
-    if(!containerElement) return;
-    // Save original HTML once
-    if(containerElement.dataset.vlearnOrig === undefined){
-      containerElement.dataset.vlearnOrig = containerElement.innerHTML;
-    }
-    containerElement.innerHTML = '';
-    const iframe = document.createElement('iframe');
-    iframe.src = 'retro-cmd.html';
-    iframe.style.width = '100%';
-    iframe.style.height = '100%';
-    iframe.style.border = '0';
-    iframe.style.borderRadius = '12px';
-    iframe.setAttribute('title','ABS Retro CMD');
-    containerElement.appendChild(iframe);
-
-    // single message listener
-    if(!window._vlearn_retro_message_installed){
-      window._vlearn_retro_message_installed = true;
-      window.addEventListener('message', (ev)=> {
-        const d = ev.data || {};
-        if(d && d.type === 'retro-close' && d.target === 'vlearn-retro'){
-          const container = document.getElementById('pageContent');
-          if(container && container.dataset && container.dataset.vlearnOrig !== undefined){
-            container.innerHTML = container.dataset.vlearnOrig;
-            delete container.dataset.vlearnOrig;
-          } else if(container){
-            container.innerHTML = '<div style="padding:18px;color:#fff">CMD closed</div>';
-          }
-        }
-      });
-    }
-  }
-
-  // cleanup
-  window.addEventListener('beforeunload', ()=> stopStarfield());
+  // clean up on unload
+  window.addEventListener('beforeunload', ()=> { try{ stopStarfield(); } catch(e){} });
 
 })();
 </script>
