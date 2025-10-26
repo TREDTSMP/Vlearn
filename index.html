@@ -41,18 +41,17 @@
   .theme-panel button:hover{ background:rgba(0,0,0,0.04); }
 
   /* ================= INTRO (overlay) ================= */
-  /* Full-screen overlay that sits above everything until finished */
   #intro {
     position:fixed;
     inset:0;
     width:100%;
     height:100vh;
-    background:#0db24a; /* green background (kept from original); blue circles will appear on top */
+    background:#0db24a; /* green background */
     display:flex;
     align-items:center;
     justify-content:center;
     flex-direction:column;
-    z-index:9999; /* overlay */
+    z-index:9999;
     overflow:hidden;
     pointer-events:auto;
   }
@@ -87,29 +86,16 @@
   .shape.square { background:rgba(255,255,255,0.18); }
   .shape.triangle { width:0; height:0; border-left:28px solid transparent; border-right:28px solid transparent; border-bottom:48px solid rgba(255,255,255,0.18); }
 
-  /* === blue circles for intro overlay ===
-     These spawn dynamically via JS, grow to a computed scale and then are removed.
-  */
-  .intro-circle {
-    position: absolute;
-    border-radius: 50%;
-    background: rgba(0, 119, 204, 0.9); /* strong blue */
-    width: 80px;
-    height: 80px;
-    opacity: 0.95;
-    transform: translate(-50%, -50%) scale(0);
-    transition: transform 3000ms cubic-bezier(.2,.8,.2,1), opacity 900ms ease;
-    pointer-events: none;
-    z-index:10002; /* above center-content (10000) */
-    will-change: transform, opacity;
-  }
+  /* ink splat overlay (multiple splats) */
+  .splat { position:absolute; background:#062d6f; border-radius:50%; opacity:0; transform:translate(-50%,-50%) scale(0); z-index:10001; pointer-events:none; transition: transform 4s ease-in-out, opacity .9s ease; }
+  .splat.grow { opacity:1; transform:translate(-50%,-50%) scale(40); }
 
   @media (prefers-reduced-motion: reduce) {
-    .bigV, .smallV, .intro-circle, .shape { animation: none !important; transition:none !important; opacity:1 !important; transform:none !important; }
+    .bigV, .smallV, .splat, .shape { animation: none !important; transition:none !important; opacity:1 !important; transform:none !important; }
     .welcome-text { opacity:1 !important; transform:none !important; }
   }
 
-  /* --- RICKROLL --- (kept but unused in default flow) */
+  /* --- RICKROLL --- */
   #rick{ position:fixed; inset:0; z-index:9997; background:#000; display:flex; align-items:center; justify-content:center; }
   #rick video{ width:100%; height:100%; object-fit:cover; }
 
@@ -182,7 +168,7 @@
     <button data-theme="sgs">SGS</button>
   </div>
 
-  <!-- Loading (unchanged, 4s) -->
+  <!-- Loading (4s) -->
   <section id="loading" class="screen" aria-hidden="false">
     <div class="loader-card" role="status">
       <div class="logo-title">VLearn</div>
@@ -192,7 +178,7 @@
     </div>
   </section>
 
-  <!-- Intro overlay: full-screen, sits above everything -->
+  <!-- Intro overlay -->
   <section id="intro" class="hidden" aria-hidden="true" role="img" aria-label="VLearn intro animation">
     <div id="shapesContainer" aria-hidden="true"></div>
 
@@ -203,15 +189,20 @@
       </div>
       <div id="introText" class="welcome-text">Welcome to VLearn Web App</div>
     </div>
-    <!-- NOTE: old splat elements removed. Blue circles spawn dynamically via JS -->
+
+    <!-- ink splats pre-created -->
+    <div class="splat" id="splat1" style="left:40%; top:30%; width:80px; height:80px;"></div>
+    <div class="splat" id="splat2" style="left:75%; top:45%; width:60px; height:60px;"></div>
+    <div class="splat" id="splat3" style="left:18%; top:68%; width:100px; height:100px;"></div>
+    <div class="splat" id="splat4" style="left:55%; top:78%; width:70px; height:70px;"></div>
   </section>
 
-  <!-- Rickroll (kept but hidden) -->
+  <!-- Rickroll (1s) -->
   <section id="rick" class="hidden" aria-hidden="true">
     <video id="rickVideo" src="rickroll.mp4" playsinline preload="auto"></video>
   </section>
 
-  <!-- Space with starfield & nav bar (final stage) -->
+  <!-- Space with starfield & nav bar -->
   <section id="space" class="screen hidden" aria-hidden="true">
     <div id="glitchBg" class="glitch-bg" style="display:none;"></div>
     <canvas id="stars"></canvas>
@@ -247,7 +238,7 @@
       </div>
     </nav>
 
-    <!-- page content -->
+    <!-- page content that will host the retro iframe when Retro theme is active -->
     <div class="page-content-placeholder" id="pageContent" style="margin-top:86px;">
       <h2 style="font-size:22px; margin-bottom:10px; color:var(--nav-fg);">VLearn Directory</h2>
       <p style="color:var(--muted);">Choose a subject from the menu to continue. Locked items show a "Locked for now" message.</p>
@@ -278,77 +269,59 @@
   const smallV = document.getElementById('smallV');
   const introText = document.getElementById('introText');
   const shapesContainer = document.getElementById('shapesContainer');
+  const splats = [ document.getElementById('splat1'), document.getElementById('splat2'), document.getElementById('splat3'), document.getElementById('splat4') ];
 
-  // theme panel
+  // theme UI
   const themeBtn = document.getElementById('themeBtn');
   const themePanel = document.getElementById('themePanel');
   themeBtn.addEventListener('click', (e)=>{ e.stopPropagation(); themePanel.style.display = themePanel.style.display === 'block' ? 'none' : 'block'; });
   document.addEventListener('click', (e)=>{ if(themePanel.style.display === 'block' && !themePanel.contains(e.target) && e.target !== themeBtn) themePanel.style.display='none'; });
 
-  // THEMES (kept intact)
+  // THEMES
   const THEMES = {
-    dark: {
-      '--bg':'#000000', '--fg':'#bfefff','--muted':'rgba(255,255,255,0.6)','--accent':'#6ee7ff',
-      navBg:'rgba(0,0,0,0.76)', navFg:'#dff8ff', dropdown:'#111',
-      spaceBg:'#000000', star:'#ffffff', starMoving:1, glitch:false
-    },
-    light: {
-      '--bg':'#ffffff', '--fg':'#003a66','--muted':'rgba(0,0,0,0.45)','--accent':'#0077cc',
-      navBg:'rgba(255,255,255,0.95)', navFg:'#003a66', dropdown:'#fff',
-      spaceBg:'#ffffff', star:'#001f3f', starMoving:1, glitch:false
-    },
-    retro: {
-      '--bg':'#001a33', '--fg':'#ffffff','--muted':'rgba(255,255,255,0.85)','--accent':'#66ffff',
-      navBg:'rgba(0,26,51,0.92)', navFg:'#fff', dropdown:'#001a33',
-      spaceBg:'#001a33', star:'#ffffff', starMoving:0.2, glitch:false
-    },
-    radio: {
-      '--bg':'#d6ff7a','--fg':'#2f7f00','--muted':'rgba(0,0,0,0.35)','--accent':'#6bd400',
-      navBg:'rgba(230,255,170,0.95)', navFg:'#164a00', dropdown:'#eaffb8',
-      spaceBg:'#d6ff7a', star:'#2f7f00', starMoving:1, glitch:false
-    },
-    lava: {
-      '--bg':'linear-gradient(180deg,#ffd84d,#ff7a00)','--fg':'#6b0000','--muted':'rgba(0,0,0,0.45)','--accent':'#ff6a00',
-      navBg:'rgba(255,230,170,0.95)', navFg:'#6b0000', dropdown:'#ffe7b0',
-      spaceBg:'#ffd84d', star:'#6b0000', starMoving:1, glitch:false
-    },
-    glitch: {
-      '--bg':'#050406','--fg':'#e6f7ff','--muted':'rgba(255,255,255,0.6)','--accent':'#00ffff',
-      navBg:'rgba(2,2,2,0.85)', navFg:'#e6f7ff', dropdown:'#070707',
-      spaceBg:'glitch', starNeg:['#ffffff','#00ffff','#000000','#ff0000'], starMoving:0, glitch:true
-    },
-    sgs: {
-      '--bg':'linear-gradient(180deg,#061235,#0b2b45)','--fg':'#ffffff','--muted':'rgba(255,255,255,0.85)','--accent':'#ffb86b',
-      navBg:'rgba(6,18,53,0.9)', navFg:'#fff', dropdown:'#05213b',
-      spaceBg:'#061235', star:'#ff8a3d', starMoving:1, glitch:false
-    }
+    dark: { '--bg':'#000000', '--fg':'#bfefff','--muted':'rgba(255,255,255,0.6)','--accent':'#6ee7ff', navBg:'rgba(0,0,0,0.76)', navFg:'#dff8ff', dropdown:'#111', spaceBg:'#000000', star:'#ffffff', starMoving:1, glitch:false },
+    light: { '--bg':'#ffffff', '--fg':'#003a66','--muted':'rgba(0,0,0,0.45)','--accent':'#0077cc', navBg:'rgba(255,255,255,0.95)', navFg:'#003a66', dropdown:'#fff', spaceBg:'#ffffff', star:'#001f3f', starMoving:1, glitch:false },
+    retro: { '--bg':'#001a33', '--fg':'#ffffff','--muted':'rgba(255,255,255,0.85)','--accent':'#66ffff', navBg:'rgba(0,26,51,0.92)', navFg:'#fff', dropdown:'#001a33', spaceBg:'#001a33', star:'#ffffff', starMoving:0.2, glitch:false },
+    radio: { '--bg':'#d6ff7a','--fg':'#2f7f00','--muted':'rgba(0,0,0,0.35)','--accent':'#6bd400', navBg:'rgba(230,255,170,0.95)', navFg:'#164a00', dropdown:'#eaffb8', spaceBg:'#d6ff7a', star:'#2f7f00', starMoving:1, glitch:false },
+    lava: { '--bg':'linear-gradient(180deg,#ffd84d,#ff7a00)','--fg':'#6b0000','--muted':'rgba(0,0,0,0.45)','--accent':'#ff6a00', navBg:'rgba(255,230,170,0.95)', navFg:'#6b0000', dropdown:'#ffe7b0', spaceBg:'#ffd84d', star:'#6b0000', starMoving:1, glitch:false },
+    glitch: { '--bg':'#050406','--fg':'#e6f7ff','--muted':'rgba(255,255,255,0.6)','--accent':'#00ffff', navBg:'rgba(2,2,2,0.85)', navFg:'#e6f7ff', dropdown:'#070707', spaceBg:'glitch', starNeg:['#ffffff','#00ffff','#000000','#ff0000'], starMoving:0, glitch:true },
+    sgs: { '--bg':'linear-gradient(180deg,#061235,#0b2b45)','--fg':'#ffffff','--muted':'rgba(255,255,255,0.85)','--accent':'#ffb86b', navBg:'rgba(6,18,53,0.9)', navFg:'#fff', dropdown:'#05213b', spaceBg:'#061235', star:'#ff8a3d', starMoving:1, glitch:false }
   };
 
+  // applyTheme with retro integration (saves/restores pageContent)
   function applyTheme(name){
-  const cfg = THEMES[name] || THEMES.light;
-  Object.keys(cfg).forEach(k=>{
-    if(k.startsWith('--')) document.documentElement.style.setProperty(k, cfg[k]);
-  });
-  document.documentElement.style.setProperty('--nav-bg', cfg.navBg);
-  document.documentElement.style.setProperty('--nav-fg', cfg.navFg);
-  document.documentElement.style.setProperty('--dropdown-bg', cfg.dropdown || cfg.navBg);
-  currentTheme = name;
-  localStorage.setItem('vlearn-theme', name);
-  if(!space.classList.contains('hidden')) restartStarfield();
-  document.getElementById('glitchBg').style.display = cfg.glitch ? 'block' : 'none';
+    const cfg = THEMES[name] || THEMES.light;
+    Object.keys(cfg).forEach(k=>{
+      if(k.startsWith('--')) document.documentElement.style.setProperty(k, cfg[k]);
+    });
+    document.documentElement.style.setProperty('--nav-bg', cfg.navBg);
+    document.documentElement.style.setProperty('--nav-fg', cfg.navFg);
+    document.documentElement.style.setProperty('--dropdown-bg', cfg.dropdown || cfg.navBg);
+    currentTheme = name;
+    localStorage.setItem('vlearn-theme', name);
+    if(!space.classList.contains('hidden')) restartStarfield();
+    document.getElementById('glitchBg').style.display = cfg.glitch ? 'block' : 'none';
 
-  // ✅ Added this part:
-  if(name === 'retro') {
+    // retro integration
     const container = document.getElementById('pageContent');
-    if(container) loadRetroBoxIntoContainer(container);
+    if(!container) return;
+    if(name === 'retro') {
+      loadRetroBoxIntoContainer(container);
+    } else {
+      if(container.dataset && container.dataset.vlearnOrig !== undefined){
+        container.innerHTML = container.dataset.vlearnOrig;
+        delete container.dataset.vlearnOrig;
+      }
+    }
   }
-}
+
   document.querySelectorAll('.theme-panel button').forEach(b => b.addEventListener('click', ()=> applyTheme(b.getAttribute('data-theme')) ) );
+
   let currentTheme = localStorage.getItem('vlearn-theme') || 'light';
   applyTheme(currentTheme);
 
-  /* ============ STARFIELD (kept) ============ */
-  const STAR_DENSITY = 2000;
+  /* ============ STARFIELD (original logic kept) ============ */
+  const STAR_DENSITY = 4000;
   let starAnimationStop = null;
 
   function startStarfield(){
@@ -458,119 +431,82 @@
     document.addEventListener('keydown', function(e){ if(e.key === 'Escape') document.querySelectorAll('.dropdown .dropdown-content').forEach(p => p.style.display = 'none'); });
   })();
 
-  /* ============ SEQUENCE: loader -> intro -> circles -> space ============ */
+  /* ============ SEQUENCE: loader -> intro -> rick -> space ============ */
   loading.classList.remove('hidden'); intro.classList.add('hidden'); rick.classList.add('hidden'); space.classList.add('hidden');
 
-  // show loader (4s) then intro
+  // show loader for 4s then intro
   setTimeout(()=> {
     loading.classList.add('hidden');
     intro.classList.remove('hidden');
     runIntroSequence();
   }, 4000);
 
-  /* ============ Intro animation timeline (with blue circles) ============ */
+  function gotoRickThenSpace(){
+    intro.classList.add('hidden');
+    rick.classList.remove('hidden');
+
+    (async ()=>{
+      try{ await rickVideo.play(); } catch(e){ try{ rickVideo.muted=true; await rickVideo.play(); }catch(e){} }
+    })();
+
+    setTimeout(()=> {
+      try{ rickVideo.pause(); rickVideo.currentTime = 0; } catch(e){}
+      rick.classList.add('hidden');
+      space.classList.remove('hidden');
+      applyTheme(currentTheme);
+      startStarfield();
+    }, 1000); // 1s rickroll
+  }
+
+  /* ============ Intro animation timeline ============ */
   function runIntroSequence(){
     // reset states
     bigV.style.animation = '';
     smallV.style.animation = '';
     introText.classList.remove('welcome-visible');
     shapesContainer.innerHTML = '';
+    splats.forEach(s => { s.classList.remove('grow'); s.style.opacity = 0; s.style.transform = 'translate(-50%,-50%) scale(0)'; });
 
     // create shapes
     createRandomShapes(10);
 
-    // timings for Vs
+    // timings
     const bigStart = 120;
     const bigDuration = 900;
     const smallStart = 260;
     const smallDuration = 900;
     const lockDelay = Math.max(bigStart + bigDuration, smallStart + smallDuration) + 120;
+    const splatStart = 3000; // 3s
+    const splatGrowDuration = 4000; // 4s
 
     // animate Vs
     bigV.style.animation = `bigRise ${bigDuration}ms cubic-bezier(.2,.8,.2,1) ${bigStart}ms both`;
     smallV.style.animation = `smallDrop ${smallDuration}ms cubic-bezier(.2,.8,.2,1) ${smallStart}ms both`;
 
-    // brief lock pulse
+    // lock pulse
     setTimeout(()=> {
       const wrapper = document.getElementById('vWrapper');
       wrapper && wrapper.classList.add('merged');
       setTimeout(()=> wrapper && wrapper.classList.remove('merged'), 360);
     }, lockDelay);
 
-    // reveal welcome text shortly after lock
+    // welcome text after lock
     setTimeout(()=> introText.classList.add('welcome-visible'), lockDelay + 240);
 
-    // --- Blue circle sequence (starts after ~3s)
-    const circleStartDelay = 3000; // ms after intro shown
-    const circleCount = 10;
-    const growDuration = 3000; // how long each circle takes to expand
-    const stagger = 140; // ms between each circle start
-
-    // Respect reduced-motion preference: if reduce, skip animated growth and go straight to homepage quickly
-    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
+    // start splat growth at 3s; grow over 4s
     setTimeout(()=>{
-      if(reduceMotion){
-        // directly transition to homepage
-        intro.classList.add('hidden');
-        space.classList.remove('hidden');
-        applyTheme(currentTheme);
-        startStarfield();
-        return;
-      }
-
-      for(let i=0;i<circleCount;i++){
+      splats.forEach((s, idx) => {
         setTimeout(()=> {
-          // create circle
-          const c = document.createElement('div');
-          c.className = 'intro-circle';
-          const baseSize = 60 + Math.floor(Math.random()*120); // 60..180px
-          c.style.width = `${baseSize}px`;
-          c.style.height = `${baseSize}px`;
-          // random position in viewport
-          c.style.left = `${Math.random()*100}vw`;
-          c.style.top = `${Math.random()*100}vh`;
-          // append and compute an appropriate scale so the circle can cover the viewport from its center
-          intro.appendChild(c);
+          s.style.transition = `transform ${splatGrowDuration}ms ease-in-out, opacity ${Math.min(900, splatGrowDuration/3)}ms ease`;
+          s.classList.add('grow');
+        }, idx * 160);
+      });
+    }, splatStart);
 
-          // compute a conservative required scale based on diagonal distance
-          const viewportDiagonal = Math.hypot(window.innerWidth, window.innerHeight);
-          // scale so the circle's diameter becomes at least viewportDiagonal * 1.2
-          const requiredScale = (viewportDiagonal * 1.2) / baseSize;
-
-          // ensure CSS transition duration matches growDuration
-          c.style.transition = `transform ${growDuration}ms cubic-bezier(.2,.8,.2,1), opacity 900ms ease`;
-
-          // force reflow then start growth
-          void c.offsetHeight;
-          c.style.transform = `translate(-50%,-50%) scale(${requiredScale})`;
-          c.style.opacity = '1';
-
-          // cleanup: remove circle after animation completes to keep DOM small
-          setTimeout(()=> {
-            try{ c.remove(); }catch(e){}
-          }, growDuration + 1200);
-        }, i * stagger);
-      }
-
-      // After the last circle finishes growing, fade out the intro and reveal the space/homepage
-      const lastStart = circleStartDelay + (circleCount - 1) * stagger;
-      const fadeDelay = lastStart + growDuration + 200; // small buffer
-
-      setTimeout(()=>{
-        intro.style.transition = 'opacity 900ms ease';
-        intro.style.opacity = '0';
-        setTimeout(()=> {
-          intro.classList.add('hidden');
-          intro.style.opacity = ''; // reset
-          space.classList.remove('hidden');
-          applyTheme(currentTheme);
-          startStarfield();
-        }, 900);
-      }, fadeDelay);
-
-    }, circleStartDelay);
-
+    // after 7s total (3+4) -> rickroll
+    setTimeout(()=> {
+      gotoRickThenSpace();
+    }, 7000);
   }
 
   // helper: create random shapes (tri/circle/square)
@@ -601,39 +537,48 @@
     }
   }
 
-  // startup: expose run function for dev
+  // Expose for dev
   window.runIntroSequence = runIntroSequence;
 
-  // cleanup before unload
-  window.addEventListener('beforeunload', ()=> stopStarfield());
-
-  // call this when theme changes to "retro"
+  // Retro iframe loader - improved: save original content and avoid duplicate listeners
   function loadRetroBoxIntoContainer(containerElement) {
-    // containerElement is the DOM element that visually is the rounded rectangle box
-    containerElement.innerHTML = ''; // clear existing content
+    if(!containerElement) return;
+    // Save original HTML once
+    if(containerElement.dataset.vlearnOrig === undefined){
+      containerElement.dataset.vlearnOrig = containerElement.innerHTML;
+    }
+    containerElement.innerHTML = '';
     const iframe = document.createElement('iframe');
-    iframe.src = '/retro-cmd.html'; // path to the file you saved
+    iframe.src = 'retro-cmd.html';
     iframe.style.width = '100%';
     iframe.style.height = '100%';
     iframe.style.border = '0';
-    iframe.style.borderRadius = '18px';
+    iframe.style.borderRadius = '12px';
     iframe.setAttribute('title','ABS Retro CMD');
     containerElement.appendChild(iframe);
 
-    // Listen for the iframe asking to close itself (exit)
-    window.addEventListener('message', (ev)=> {
-      const d = ev.data || {};
-      if(d && d.type === 'retro-close') {
-        // remove iframe OR hide / replace with placeholder content
-        containerElement.innerHTML = '<div style="padding:18px;color:#fff">CMD closed</div>';
-      }
-    }, { once: false });
+    // single message listener
+    if(!window._vlearn_retro_message_installed){
+      window._vlearn_retro_message_installed = true;
+      window.addEventListener('message', (ev)=> {
+        const d = ev.data || {};
+        if(d && d.type === 'retro-close' && d.target === 'vlearn-retro'){
+          const container = document.getElementById('pageContent');
+          if(container && container.dataset && container.dataset.vlearnOrig !== undefined){
+            container.innerHTML = container.dataset.vlearnOrig;
+            delete container.dataset.vlearnOrig;
+          } else if(container){
+            container.innerHTML = '<div style="padding:18px;color:#fff">CMD closed</div>';
+          }
+        }
+      });
+    }
   }
+
+  // cleanup
+  window.addEventListener('beforeunload', ()=> stopStarfield());
 
 })();
 </script>
 </body>
 </html>
-
-
-
