@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ABS Search Engine — VLearn</title>
+<style>
+  :root{
+    --bg:#0b2b3c; /* dark blue background for the retro box */
+    --fg:#fff;    /* white text for retro CMD / BSOD */
+    --mono: "Courier New", Courier, monospace;
+  }
+  html,body{height:100%;margin:0;font-family:var(--mono);background:var(--bg);color:var(--fg);-webkit-font-smoothing:antialiased;}
+  .container{box-sizing:border-box;padding:18px;height:100%;display:flex;flex-direction:column;gap:12px;}
+  .title{font-weight:900;font-size:20px;margin-bottom:6px;color:#fff;}
+  .search-area{display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .engine-name{font-size:22px;font-weight:900;letter-spacing:1px;color:#fff;margin-bottom:6px;}
+  .search-box{width:60%;min-width:240px;max-width:760px;display:flex;gap:8px;align-items:center;}
+  input[type="text"]{flex:1;padding:10px 12px;border-radius:6px;border:0;background:#07202a;color:#fff;font-size:16px;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.02)}
+  button{padding:10px 12px;border-radius:6px;border:0;background:#184e67;color:#fff;font-weight:700;cursor:pointer}
+  .hint{font-size:13px;color:rgba(255,255,255,0.78);}
+  .cmd-window{flex:1;overflow:auto;background:rgba(0,0,0,0.18);border-radius:8px;padding:12px;border:1px solid rgba(255,255,255,0.06);font-size:14px;line-height:1.45;}
+  .line{white-space:pre-wrap;}
+  .prompt{color:#9be6ff;}
+  .muted{color:rgba(255,255,255,0.72);font-size:13px}
+  .btn-row{display:flex;gap:8px;align-self:center;margin-top:6px}
+
+  /* BSOD overlay (full iframe) */
+  .bsod{
+    position:fixed;inset:0;background:#07182a;color:#ffffff;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:28px;font-family:var(--mono);font-size:16px;line-height:1.6;z-index:9999;
+    display:none;
+  }
+  .bsod .big{font-weight:700;margin-bottom:12px;font-size:18px}
+  .hacker{
+    position:fixed;inset:0;background:#000;color:#33ff33;font-family:monospace;padding:18px;overflow:auto;display:none;z-index:10000;font-size:13px;line-height:1.35;
+  }
+
+  /* small helpers */
+  .small-note{font-size:12px;color:rgba(255,255,255,0.6)}
+  .centered{display:flex;justify-content:center;align-items:center}
+  .control { display:flex; gap:8px; align-items:center; }
+  .exit-btn { background:#9b1b1b; }
+</style>
+</head>
+<body>
+  <div class="container" role="application" aria-label="ABS Retro Search and CMD">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+      </div>
+      <!-- small exit button (postMessage to parent) -->
+      <div class="control">
+        <button id="closeBox" class="exit-btn" title="Close box">Exit Box</button>
+      </div>
+    </div>
+
+    <!-- Search engine UI -->
+    <div class="search-area" aria-hidden="false">
+      <div class="engine-name">ABS Search Engine</div>
+      <div class="search-box" role="search">
+        <input id="searchInput" type="text" placeholder="Type search or command (help / connect / call / exit)" aria-label="Search or command">
+        <button id="goBtn">SEARCH</button>
+      </div>
+      <div class="hint">Welcome to the ABS. Good luck web browsing.</div>
+    </div>
+
+    <!-- Command like text output area -->
+    <div id="cmdWindow" class="cmd-window" role="log" aria-live="polite"></div>
+
+    <div class="btn-row centered">
+      <button id="connectBtn">CONNECT TO INTERNET</button>
+      <button id="cmdBtn">OPEN CMD</button>
+      <button id="helpBtn">HELP</button>
+    </div>
+  </div>
+
+  <!-- BSOD overlay -->
+  <div id="bsod" class="bsod" role="alert" aria-hidden="true">
+    <div class="big">A problem has been detected and your device has been shut down to prevent damage to your device.</div>
+    <div class="line">*** STOP: 0x16DB0581 (0x6EA1A9E2 0x3EFA79EA 0x8BCA6919)</div>
+    <div class="line">*** gv3.sys</div>
+    <div class="line">Address F86B5A89 base at F86B5000, DateStamp 3DDD991EB</div>
+    <div style="height:18px"></div>
+    <div class="line">Collecting data for crash dump... Initializing data for crash dump. Beginning dump of physical memory</div>
+    <div class="line">Physical memory dump complete: 100</div>
+    <div style="height:18px"></div>
+    <div class="line">Contact your system administrator.</div>
+  </div>
+
+  <!-- Hacker simulation -->
+  <div id="hacker" class="hacker" aria-hidden="true"></div>
+
+<script>
+(function(){
+  const cmdWindow = document.getElementById('cmdWindow');
+  const searchInput = document.getElementById('searchInput');
+  const goBtn = document.getElementById('goBtn');
+  const connectBtn = document.getElementById('connectBtn');
+  const cmdBtn = document.getElementById('cmdBtn');
+  const helpBtn = document.getElementById('helpBtn');
+  const closeBox = document.getElementById('closeBox');
+  const bsod = document.getElementById('bsod');
+  const hacker = document.getElementById('hacker');
+
+  // Utility: append line
+  function appendLine(text, cls){
+    const el = document.createElement('div');
+    el.className = 'line' + (cls ? ' ' + cls : '');
+    el.textContent = text;
+    cmdWindow.appendChild(el);
+    cmdWindow.scrollTop = cmdWindow.scrollHeight;
+  }
+
+  // Commands behavior
+  function showHelp(){
+    appendLine('Available commands: help | connect | call | exit', 'muted');
+    appendLine('');
+    appendLine('help -> show this list');
+    appendLine('connect -> simulate connection to WWW via Bhutan DNS (23s)');
+    appendLine('call -> simulate dialing Bhutan DNS Server Management');
+    appendLine('exit -> close the CMD (click button too)');
+    appendLine('');
+  }
+
+  // Simulate the multi-step connection sequence you specified.
+  async function simulateConnect() {
+    cmdWindow.innerHTML = '';
+    appendLine('>>>connect', 'prompt');
+    appendLine('SYSTEM: Initiating connection sequence to WWW via Bhutan DNS Server (203.0.113.5)');
+    await waitMs(1000);
+
+    appendLine('SYSTEM: DNS lookup...');
+    appendLine('\tquery: internetexplorer.exe');
+    await waitMs(3000); // 3 secs
+
+    appendLine('\treply: 203.0.113.10');
+    appendLine('SYSTEM: Opening secure tunnel...');
+    appendLine('\ttunnel: W-TLS v1');
+    appendLine('\tcipher suite: TLS_AES_256_GCM_SHA384');
+    await waitMs(5000); // 5 secs
+
+    appendLine('SYSTEM: TLS handshake...');
+    appendLine('\tClientHello -> ServerHello -> Certificate -> KeyExchange -> Finished');
+    appendLine('\tHandshake status: SUCCESS');
+    await waitMs(4000); // 4 secs
+
+    appendLine('SYSTEM: DHCP (simulated)');
+    appendLine('\tAssigned IP: 203.0.113.45');
+    appendLine('\tSubnet: 203.0.113.0/24');
+    appendLine('\tGateway: 203.0.113.1');
+    await waitMs(5000); // 5 secs
+
+    appendLine('SYSTEM: Verifying route');
+    appendLine('\t1  203.0.113.1    1 ms YOUR IP');
+    appendLine('\t2  198.51.100.2  12 ms');
+    appendLine('\t3  198.51.100.9  28 ms');
+    appendLine('\t4  203.0.113.10  36 ms  DEST');
+    await waitMs(4000); // 4 secs
+
+    appendLine('SYSTEM:');
+    appendLine('\tALPN: h2');
+    appendLine('\tHTTP/2 streams: initialized');
+    appendLine('\tTLS session ID: 4f3a-9b2c-77aa');
+    await waitMs(1000); // 1 sec
+
+    appendLine('SYSTEM: STATUS: CONNECTED!');
+    appendLine('');
+    appendLine('Total time taken: 23 secs.', 'muted');
+
+    // After the connected output we simulate a crash after 1 second (the "search crashes in 1 sec")
+    await waitMs(1000);
+    triggerCrashSequence();
+  }
+
+  // call simulation
+  async function simulateCall(){
+    cmdWindow.innerHTML = '';
+    appendLine('>>>call', 'prompt');
+    appendLine('SYSTEM: Dialing Bhutan DNS Server Management Authority... 203.0.113.5');
+    await waitMs(1200);
+    appendLine('SYSTEM: Connecting... Ringing.');
+    await waitMs(1800);
+    appendLine('\tConnected to: Bhutan DNS Server Management Authority (203.0.113.5)');
+    appendLine('\tAttempting to reach: Admin (on-duty)');
+    await waitMs(1200);
+    appendLine('SYSTEM: Status: ADMIN UNAVAILABLE');
+    appendLine('\tAuto-response: "All agents are currently busy or offline. Please try again later."');
+    appendLine('');
+    appendLine('Click the Exit button to exit the call program.');
+  }
+
+  function triggerCrashSequence(){
+    // Show BSOD overlay (full iframe)
+    bsod.style.display = 'flex';
+    bsod.setAttribute('aria-hidden','false');
+
+    // keep BSOD for 3s then show hacker text for 5s then return to prompt
+    setTimeout(()=> {
+      bsod.style.display = 'none';
+      bsod.setAttribute('aria-hidden','true');
+      showHackerSimulation();
+    }, 3000);
+  }
+
+  function showHackerSimulation(){
+    hacker.innerHTML = '';
+    hacker.style.display = 'block';
+    hacker.setAttribute('aria-hidden','false');
+
+    // The large block of code you provided will be printed progressively for 5s.
+    const hackerText = `
+struct group_info init_groups = { .usage = ATOMIC_INIT(2) };
+
+struct group_info *groups_alloc(int gidsetsize){
+
+	struct group_info *group_info;
+
+	int nblocks;
+
+	int i;
+
+
+
+	nblocks = (gidsetsize + NGROUPS_PER_BLOCK - 1) / NGROUPS_PER_BLOCK;
+
+	/* Make sure we always allocate at least one indirect block pointer */
+
+	nblocks = nblocks ? : 1;
+
+	group_info = kmalloc(sizeof(*group_info) + nblocks*sizeof(gid_t *), GFP_USER);
+
+	if (!group_info)
+
+		return NULL;
+
+	group_info->ngroups = gidsetsize;
+
+	group_info->nblocks = nblocks;
+
+	atomic_set(&group_info->usage, 1);
+
+
+
+	if (gidsetsize <= NGROUPS_SMALL)
+
+		group_info->blocks[0] = group_info->small_block;
+
+	else {
+
+		for (i = 0; i < nblocks; i++) {
+
+			gid_t *b;
+
+			b = (void *)__get_free_page(GFP_USER);
+
+			if (!b)
+
+				goto out_undo_partial_alloc;
+
+			group_info->blocks[i] = b;
+
+		}
+
+	}
+
+	return group_info;
+
+
+
+out_undo_partial_alloc:
+
+	while (--i >= 0) {
+
+		free_page((unsigned long)group_info->blocks[i]);
+
+	}
+
+	kfree(group_info);
+
+	return NULL;
+
+}
+
+
+
+EXPORT_SYMBOL(groups_alloc);
+
+
+
+void groups_free(struct group_info *group_info)
+
+{
+
+	if (group_info->blocks[0] != group_info->small_block) {
+
+		int i;
+
+		for (i = 0; i < group_info->nblocks; i++)
+
+			free_page((unsigned long)group_info->blocks[i]);
+
+	}
+
+	kfree(group_info);
+
+}
+
+
+
+EXPORT_SYMBOL(groups_free);
+
+
+
+/* export the group_info to a user-space array */
+
+static int groups_to_user(gid_t __user *grouplist,
+
+			  const struct group_info *group_info)
+
+{
+
+	int i;
+
+	unsigned int count = group_info->ngroups;
+
+
+
+	for (i = 0; i < group_info->nblocks; i++) {
+
+		unsigned int cp_count = min(NGROUPS_PER_BLOCK, count);
+
+		unsigned int len = cp_count * sizeof(*grouplist);
+
+
+
+		if (copy_to_user(grouplist, group_info->blocks[i], len))
+
+			return -EFAULT;
+
+
+
+		grouplist += NGROUPS_PER_BLOCK;
+
+		count -= cp_count;
+
+	}
+
+	return 0;
+
+}
+
+
+
+/* fill a group_info from a user-space array - it must be allocated already */
+
+static int groups_from_user(struct group_info *group_info,
+
+    gid_t __user *grouplist)
+
+{
+
+	int i;
+
+	unsigned int count = group_info->ngroups;
+
+
+
+	for (i = 0; i < group_info->nblocks; i++) {
+
+		unsigned int cp_count = min(NGROUPS_PER_BLOCK, count);
+
+		unsigned int len = cp_count * sizeof(*grouplist);
+
+
+
+		if (copy_from_user(group_info->blocks[i], grouplist, len))
+
+			return -EFAULT;
+
+
+
+		grouplist += NGROUPS_PER_BLOCK;
+
+		count -= cp_count;
+
+	}
+
+	return 0;
+
+}
+
+
+
+/* a simple Shell sort */
+
+static void groups_sort(struct group_info *group_info)
+
+{
+
+	int base, max, stride;
+
+	int gidsetsize = group_info->ngroups;
+
+
+
+	for (stride = 1; stride < gidsetsize; stride = 3 * stride + 1)
+
+		; /* nothing */
+
+	stride /= 3;
+
+
+
+	while (stride) {
+
+		max = gidsetsize - stride;
+
+		for (base = 0; base < max; base++) {
+
+			int left = base;
+
+			int right = left + stride;
+
+			gid_t tmp = GROUP_AT(group_info, right);
+
+
+
+			while (left >= 0 && GROUP_AT(group_info, left) > tmp) {
+
+				GROUP_AT(group_info, right) =
+
+				    GROUP_AT(group_info, left);
+
+				right = left;
+
+				left -= stride;
+
+			}
+
+			GROUP_AT(group_info, right) = tmp;
+
+		}
+
+		stride /= 3;
+
+	}
+
+}
+
+
+
+/* a simple bsearch */
+
+int groups_search(const struct group_info *group_info, gid_t grp)
+
+{
+
+	unsigned int left, right;
+
+
+
+	if (!group_info)
+
+		return 0;
+
+
+
+	left = 0;
+
+	right = group_info->ngroups;
+
+	while (left < right) {
+
+		unsigned int mid = left + (right - left)/2;
+
+		if (grp > GROUP_AT(group_info, mid))
+
+			left = mid + 1;
+
+		else if (grp < GROUP_AT(group_info, mid))
+
+			right = mid;
+
+		else
+
+			return 1;
+
+	}
+
+	return 0;
+
+}
+
+
+
+/**
+
+ * set_groups - Change a group subscription in a set of credentials
+
+ * @new: The newly prepared set of credentials to alter
+
+ * @group_info: The group list to install
+
+ *
+
+ * Validate a group subscription and, if valid, insert it into a set
+
+ * of credentials.
+
+ */
+
+int set_groups(struct cred *new, struct group_info *group_info)
+
+{
+
+	put_group_info(new->group_info);
+
+	groups_sort(group_info);
+
+	get_group_info(group_info);
+
+	new->group_info = group_info;
+
+	return 0;
+
+}
+
+
+
+EXPORT_SYMBOL(set_groups);
+
+
+
+/**
+
+ * set_current_groups - Change current's group subscription
+
+ * @group_info: The group list to impose
+
+ *
+
+ * Validate a group subscription and, if valid, impose it upon current's task
+
+ * security record.
+
+ */
+
+int set_current_groups(struct group_info *group_info)
+
+{
+
+	struct cred *new;
+
+	int ret;
+
+
+
+	new = prepare_creds();
+
+	if (!new)
+
+		return -ENOMEM;
+
+
+
+	ret = set_groups(new, group_info);
+
+	if (ret < 0) {
+
+		abort_creds(new);
+
+		return ret;
+
+	}
+
+
+
+	return commit_creds(new);
+
+}
+
+
+
+EXPORT_SYMBOL(set_current_groups);
+
+
+
+SYSCALL_DEFINE2(getgroups, int, gidsetsize, gid_t __user *, grouplist)
+
+{
+
+	const struct cred *cred = current_cred();
+
+	int i;
+
+
+
+	if (gidsetsize < 0)
+
+		return -EINVAL;
+
+
+
+	/* no need to grab task_lock here; it cannot change */
+
+	i = cred->group_info->ngroups;
+
+	if (gidsetsize) {
+
+		if (i > gidsetsize) {
+
+			i = -EINVAL;
+
+			goto out;
+
+		}
+
+		if (groups_to_user(grouplist, cred->group_info)) {
+
+			i = -EFAULT;
+
+			goto out;
+
+		}
+
+	}
+
+out:
+
+	return i;
+
+}
+
+
+
+/*
+
+ *	SMP: Our groups are copy-on-write. We can set them safely
+
+ *	without another task interfering.
+
+ */
+
+
+
+SYSCALL_DEFINE2(setgroups, int, gidsetsize, gid_t __user *, grouplist)
+
+{
+
+	struct group_info *group_info;
+
+	int retval;
+
+
+
+	if (!nsown_capable(CAP_SETGID))
+
+		return -EPERM;
+
+	if ((unsigned)gidsetsize > NGROUPS_MAX)
+
+		return -EINVAL;
+
+
+
+	group_info = groups_alloc(gidsetsize);
+
+	if (!group_info)
+
+		return -ENOMEM;
+
+	retval = groups_from_user(group_info, grouplist);
+
+	if (retval) {
+
+		put_group_info(group_info);
+
+		return retval;
+
+	}
+
+
+
+	retval = set_current_groups(group_info);
+
+	put_group_info(group_info);
+
+
+
+	return retval;
+
+}
+
+
+
+/*
+
+ * Check whether we're fsgid/egid or in the supplemental group..
+
+ */
+
+int in_group_p(gid_t grp)
+
+{
+
+	const struct cred *cred = current_cred();
+
+	int retval = 1;
+
+
+
+	if (grp != cred->fsgid)
+
+		retval = groups_search(cred->group_info, grp);
+
+	return retval;
+
+}
+
+
+
+EXPORT_SYMBOL(in_group_p);
+
+
+
+int in_egroup_p(gid_t grp)
+
+{
+
+	const struct cred *cred = current_cred();
+
+	int retval = 1;
+
+
+
+	if (grp != cred->egid)
+
+		retval = groups_search(cred->group_info, grp);
+
+	return retval;
+
+}
+|
+>>>!LOGIN FAILED!
+`;
+    // We'll stream text quickly for 5s and then hide.
+    const totalMs = 5000;
+    const parts = hackerText.split('\n');
+    let idx = 0;
+    const interval = Math.max(20, Math.floor(totalMs / Math.max(1, parts.length)));
+    const t = setInterval(()=>{
+      if(idx < parts.length){
+        const ln = document.createElement('div');
+        ln.textContent = parts[idx++];
+        hacker.appendChild(ln);
+        hacker.scrollTop = hacker.scrollHeight;
+      } else {
+        clearInterval(t);
+      }
+    }, interval);
+
+    // Hide hacker screen after 5s then reset
+    setTimeout(()=> {
+      hacker.style.display = 'none';
+      hacker.setAttribute('aria-hidden','true');
+      cmdWindow.innerHTML = '';
+      appendLine('SYSTEM: Returned to CMD. You may type help for commands.', 'muted');
+      // keep last state so user can exit
+    }, totalMs + 200);
+  }
+
+  function waitMs(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+  // Open CMD (simple prompt that accepts typed commands)
+  function openCmd(){
+    cmdWindow.innerHTML = '';
+    appendLine('ABSOS.[Version 13.12.2009.9.03.2009]');
+    appendLine('(c) ABS Co. All rights reserved.');
+    appendLine('');
+    appendLine('Type commands: help, connect, call, exit');
+    appendLine('');
+    // focus input for user convenience
+    searchInput.focus();
+  }
+
+  // wire buttons
+  goBtn.addEventListener('click', ()=>{
+    const val = (searchInput.value || '').trim();
+    if(!val) { // treat as basic search -> crash sequence after 1s
+      appendLine('>>> (search) (no input)');
+      appendLine('SYSTEM: Loading search results...');
+      setTimeout(()=> triggerCrashSequence(), 1000);
+      return;
+    }
+    const lc = val.toLowerCase();
+    if(lc === 'help'){ showHelp(); }
+    else if(lc === 'connect'){ simulateConnect(); }
+    else if(lc === 'call'){ simulateCall(); }
+    else if(lc === 'exit'){ requestCloseToParent(); }
+    else {
+      // any other search/text -> start "search" then crash in 1s
+      appendLine('>>> ' + val, 'prompt');
+      appendLine('ABS Search: processing...');
+      setTimeout(()=> triggerCrashSequence(), 1000);
+    }
+  });
+
+  // keyboard Enter
+  searchInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ goBtn.click(); } });
+
+  // top control buttons
+  connectBtn.addEventListener('click', ()=> simulateConnect());
+  cmdBtn.addEventListener('click', ()=> openCmd());
+  helpBtn.addEventListener('click', ()=> showHelp());
+  closeBox.addEventListener('click', ()=> requestCloseToParent());
+
+  // send message to parent to close the iframe or hide the box
+  function requestCloseToParent(){
+    // post message - parent should listen for {type: 'retro-close'}
+    try{ parent.postMessage({type:'retro-close'}, '*'); }catch(e){}
+  }
+
+  // When this frame receives a message from parent to "focus" or "reset", we can react.
+  window.addEventListener('message', (ev)=>{
+    const d = ev.data || {};
+    if(d && d.type === 'retro-open'){
+      // reset UI
+      cmdWindow.innerHTML = '';
+      searchInput.value = '';
+      openCmd();
+    }
+  });
+
+  // auto-open cmd when loaded
+  openCmd();
+
+})();
+</script>
+</body>
+</html>
