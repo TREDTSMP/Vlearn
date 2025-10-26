@@ -325,18 +325,24 @@
   };
 
   function applyTheme(name){
-    const cfg = THEMES[name] || THEMES.light;
-    Object.keys(cfg).forEach(k=>{
-      if(k.startsWith('--')) document.documentElement.style.setProperty(k, cfg[k]);
-    });
-    document.documentElement.style.setProperty('--nav-bg', cfg.navBg);
-    document.documentElement.style.setProperty('--nav-fg', cfg.navFg);
-    document.documentElement.style.setProperty('--dropdown-bg', cfg.dropdown || cfg.navBg);
-    currentTheme = name;
-    localStorage.setItem('vlearn-theme', name);
-    if(!space.classList.contains('hidden')) restartStarfield();
-    document.getElementById('glitchBg').style.display = cfg.glitch ? 'block' : 'none';
+  const cfg = THEMES[name] || THEMES.light;
+  Object.keys(cfg).forEach(k=>{
+    if(k.startsWith('--')) document.documentElement.style.setProperty(k, cfg[k]);
+  });
+  document.documentElement.style.setProperty('--nav-bg', cfg.navBg);
+  document.documentElement.style.setProperty('--nav-fg', cfg.navFg);
+  document.documentElement.style.setProperty('--dropdown-bg', cfg.dropdown || cfg.navBg);
+  currentTheme = name;
+  localStorage.setItem('vlearn-theme', name);
+  if(!space.classList.contains('hidden')) restartStarfield();
+  document.getElementById('glitchBg').style.display = cfg.glitch ? 'block' : 'none';
+
+  // ✅ Added this part:
+  if(name === 'retro') {
+    const container = document.getElementById('pageContent');
+    if(container) loadRetroBoxIntoContainer(container);
   }
+}
   document.querySelectorAll('.theme-panel button').forEach(b => b.addEventListener('click', ()=> applyTheme(b.getAttribute('data-theme')) ) );
   let currentTheme = localStorage.getItem('vlearn-theme') || 'light';
   applyTheme(currentTheme);
@@ -601,9 +607,33 @@
   // cleanup before unload
   window.addEventListener('beforeunload', ()=> stopStarfield());
 
+  // call this when theme changes to "retro"
+  function loadRetroBoxIntoContainer(containerElement) {
+    // containerElement is the DOM element that visually is the rounded rectangle box
+    containerElement.innerHTML = ''; // clear existing content
+    const iframe = document.createElement('iframe');
+    iframe.src = '/retro-cmd.html'; // path to the file you saved
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = '0';
+    iframe.style.borderRadius = '18px';
+    iframe.setAttribute('title','ABS Retro CMD');
+    containerElement.appendChild(iframe);
+
+    // Listen for the iframe asking to close itself (exit)
+    window.addEventListener('message', (ev)=> {
+      const d = ev.data || {};
+      if(d && d.type === 'retro-close') {
+        // remove iframe OR hide / replace with placeholder content
+        containerElement.innerHTML = '<div style="padding:18px;color:#fff">CMD closed</div>';
+      }
+    }, { once: false });
+  }
+
 })();
 </script>
 </body>
 </html>
+
 
 
