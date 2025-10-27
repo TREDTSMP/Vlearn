@@ -27,7 +27,7 @@
 
   /* BSOD overlay (full iframe) */
   .bsod{
-    position:fixed;inset:0;background:#0000ff;color:#ffffff;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:28px;font-family:var(--mono);font-size:16px;line-height:1.6;z-index:9999;
+    position:fixed;inset:0;background:#0000FF;color:#ffffff;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:28px;font-family:var(--mono);font-size:16px;line-height:1.6;z-index:9999;
     display:none;
   }
   .bsod .big{font-weight:700;margin-bottom:12px;font-size:18px}
@@ -168,8 +168,8 @@
     appendLine('');
     appendLine('Total time taken: 23 secs.', 'muted');
 
-    // After the connected output we simulate a crash after 1 second (the "search crashes in 1 sec")
-    await waitMs(1000);
+    // After the connected output we simulate a crash after 1 second (the "search crashes in 5 sec")
+    await waitMs(5000);
     triggerCrashSequence();
   }
 
@@ -744,8 +744,8 @@ int in_egroup_p(gid_t grp)
 |
 >>>!LOGIN FAILED!
 `;
-    // We'll stream text quickly for 5s and then hide.
-    const totalMs = 5000;
+    // We'll stream text quickly for 6s and then hide.
+    const totalMs = 6000;
     const parts = hackerText.split('\n');
     let idx = 0;
     const interval = Math.max(20, Math.floor(totalMs / Math.max(1, parts.length)));
@@ -760,7 +760,7 @@ int in_egroup_p(gid_t grp)
       }
     }, interval);
 
-    // Hide hacker screen after 5s then reset
+    // Hide hacker screen after 6s then reset
     setTimeout(()=> {
       hacker.style.display = 'none';
       hacker.setAttribute('aria-hidden','true');
