@@ -176,34 +176,47 @@
 
   // call simulation
   async function simulateCall(){
-    cmdWindow.innerHTML = '';
-    appendLine('>>>call', 'prompt');
-    appendLine('SYSTEM: Dialing Bhutan DNS Server Management Authority... 203.0.113.5');
-    await waitMs(1200);
-    appendLine('SYSTEM: Connecting... Ringing.');
-    await waitMs(1800);
-    appendLine('\tConnected to: Bhutan DNS Server Management Authority (203.0.113.5)');
-    appendLine('\tAttempting to reach: Admin (on-duty)');
-    await waitMs(1200);
-    appendLine('SYSTEM: Status: ADMIN UNAVAILABLE');
-    appendLine('\tAuto-response: "All agents are currently busy or offline. Please try again later."');
-    appendLine('');
-    appendLine('Click the Exit button to exit the call program.');
-  }
+  cmdWindow.innerHTML = '';
+  appendLine('>>>call', 'prompt');
+  appendLine('SYSTEM: Dialing Bhutan DNS Server Management Authority... 203.0.113.5');
+  await waitMs(1200);
+  appendLine('SYSTEM: Connecting... Ringing.');
+  await waitMs(1800);
+  appendLine('\tConnected to: Bhutan DNS Server Management Authority (203.0.113.5)');
+  appendLine('\tAttempting to reach: Admin (on-duty)');
+  await waitMs(1200);
 
-  function triggerCrashSequence(){
-    // Show BSOD overlay (full iframe)
-    bsod.style.display = 'flex';
-    bsod.setAttribute('aria-hidden','false');
+  // --- 🔊 Play sound for 17 seconds ---
+  const audio = new Audio('morse.wav'); // ← Put your sound file in the same folder
+  audio.volume = 0.6; // adjust volume (0.0–1.0)
+  audio.play().catch(err => console.log('Audio playback failed:', err));
 
-    // keep BSOD for 3s then show hacker text for 5s then return to prompt
-    setTimeout(()=> {
-      bsod.style.display = 'none';
-      bsod.setAttribute('aria-hidden','true');
-      showHackerSimulation();
-    }, 3000);
-  }
+  // --- 🔄 Spinner animation (17 seconds) ---
+  appendLine('SYSTEM: Connection established. Running remote diagnostics...');
+  const spinnerLine = document.createElement('div');
+  spinnerLine.className = 'line muted';
+  spinnerLine.textContent = 'Processing... |';
+  cmdWindow.appendChild(spinnerLine);
 
+  const spinnerChars = ['|', '/', '-', '\\'];
+  let i = 0;
+  const spinInterval = setInterval(()=>{
+    spinnerLine.textContent = 'Processing... ' + spinnerChars[i++ % spinnerChars.length];
+    cmdWindow.scrollTop = cmdWindow.scrollHeight;
+  }, 150); // speed of rotation
+
+  await waitMs(17000); // total 17 seconds
+  clearInterval(spinInterval);
+  spinnerLine.textContent = 'Processing... DONE ✓';
+  audio.pause();
+  audio.currentTime = 0; // reset sound for reuse
+  await waitMs(800);
+
+  appendLine('SYSTEM: Status: ADMIN UNAVAILABLE');
+  appendLine('\tAuto-response: "All agents are currently busy or offline. Please try again later."');
+  appendLine('');
+  appendLine('Click the Exit button to exit the call program.');
+}
   function showHackerSimulation(){
     hacker.innerHTML = '';
     hacker.style.display = 'block';
