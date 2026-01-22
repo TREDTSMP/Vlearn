@@ -68,15 +68,31 @@
   transform-origin:top left;
 }
 
-/* dropdown items */
-.dropdown-content li a{
+/* dropdown items (buttons + links) */
+.dropdown-content li a,
+.dropdown-content li button{
+  width:100%;
   display:block;
   padding:8px 12px;
+  background:transparent;
+  border:0;
   color:#fff;
+  text-align:left;
+  font-weight:600;
+  cursor:pointer;
+  border-radius:8px;
   white-space:nowrap;
 }
-.dropdown-content li a:hover{
+
+.dropdown-content li a:hover,
+.dropdown-content li button:hover:not(:disabled){
   background: rgba(255,255,255,0.06);
+}
+
+/* locked buttons */
+.dropdown-content li button:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
 }
 
 /* show on hover (desktop) */
