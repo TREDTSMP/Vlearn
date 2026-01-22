@@ -221,17 +221,31 @@
       <div class="nav-left">
         <a href="index.html" class="brand">VLEARN</a>
 
-        <ul class="nav-links">
-          <li class="dropdown">
-            <button class="dropbtn">SUBJECTS ▾</button>
-            <ul class="dropdown-content" id="subjectsDrop">
-              <li><a href="hindi.html">Hindi</a></li>
-              <li><a href="#" class="locked">English</a></li>
-              <li><a href="#" class="locked">Maths</a></li>
-              <li><a href="#" class="locked">Science</a></li>
-              <li><a href="#" class="locked">SST</a></li>
-            </ul>
-          </li>
+       <ul class="nav-links">
+  <li class="dropdown">
+    <button class="dropbtn" aria-haspopup="true" aria-expanded="false">
+      SUBJECTS ▾
+    </button>
+
+    <ul class="dropdown-content" id="subjectsDrop">
+      <li>
+        <button onclick="location.href='hindi.html'">Hindi</button>
+      </li>
+      <li>
+        <button class="locked" disabled>English 🔒</button>
+      </li>
+      <li>
+        <button class="locked" disabled>Maths 🔒</button>
+      </li>
+      <li>
+        <button class="locked" disabled>Science 🔒</button>
+      </li>
+      <li>
+        <button class="locked" disabled>SST 🔒</button>
+      </li>
+    </ul>
+  </li>
+</ul>
 
           <li><a href="#" >PRACTICE SHEET</a></li>
           <li><a href="#" >ANSWER KEY</a></li>
@@ -606,6 +620,7 @@
 </script>
 </body>
 </html>
+
 
 
 
