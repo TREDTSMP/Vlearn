@@ -281,7 +281,17 @@
 
 <script>
 /* ============ ORCHESTRATION & THEME + STARFIELD ============ */
+   /* ============ INTRO DISPLAY RULES (SESSION + 4 HOURS) ============ */
 (function(){
+  const INTRO_COOLDOWN = 4 * 60 * 60 * 1000; // 4 hours in ms
+  const now = Date.now();
+
+  const lastIntroTime = Number(localStorage.getItem('vlearn_intro_time') || 0);
+  const introSeenThisSession = sessionStorage.getItem('vlearn_intro_seen') === '1';
+
+  const introBlocked =
+    introSeenThisSession ||
+    (now - lastIntroTime < INTRO_COOLDOWN);
   // elements
   const loading = document.getElementById('loading');
   const intro = document.getElementById('intro');
@@ -468,14 +478,30 @@
   })();
 
   /* ============ SEQUENCE: loader -> intro -> circles -> space ============ */
-  loading.classList.remove('hidden'); intro.classList.add('hidden'); rick.classList.add('hidden'); space.classList.add('hidden');
+  loading.classList.remove('hidden');
+  intro.classList.add('hidden');
+  rick.classList.add('hidden');
+  space.classList.add('hidden');
 
-  // show loader (4s) then intro
-  setTimeout(()=> {
+  if (introBlocked) {
+    /* Skip loader + intro */
     loading.classList.add('hidden');
-    intro.classList.remove('hidden');
-    runIntroSequence();
-  }, 4000);
+    intro.classList.add('hidden');
+    space.classList.remove('hidden');
+    applyTheme(currentTheme);
+    startStarfield();
+  } else {
+    /* First-time or allowed intro */
+    setTimeout(() => {
+      loading.classList.add('hidden');
+      intro.classList.remove('hidden');
+      runIntroSequence();
+
+      // mark intro as seen
+      sessionStorage.setItem('vlearn_intro_seen', '1');
+      localStorage.setItem('vlearn_intro_time', Date.now().toString());
+    }, 4000);
+  }
 
   /* ============ Intro animation timeline (with blue circles) ============ */
   function runIntroSequence(){
@@ -620,6 +646,7 @@
 </script>
 </body>
 </html>
+
 
 
 
